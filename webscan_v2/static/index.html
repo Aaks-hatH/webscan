@@ -192,6 +192,7 @@ code{font-family:monospace;background:var(--bg3);padding:1px 5px;border-radius:3
       <button class="btn btn-primary btn-full" onclick="doRegister()">Create account</button>
     </div>
     <p style="text-align:center;margin-top:1rem;font-size:.75rem;color:var(--text3)">Authorized testing environments only.</p>
+    <p id="backend-hint" style="text-align:center;margin-top:.5rem;font-size:.72rem;color:var(--text3)"></p>
   </div>
 </div>
 
@@ -240,6 +241,17 @@ let currentPage = 'dashboard';
 let activeWs = null;
 let scanPollers = {};
 
+const RAW_API_BASE = (
+  localStorage.getItem('ws_api_base') ||
+  new URLSearchParams(location.search).get('api') ||
+  (window.WEBSCAN_API_BASE || '')
+).trim();
+const API_BASE = RAW_API_BASE ? RAW_API_BASE.replace(/\/$/, '') : '';
+const API_PREFIX = `${API_BASE}/api`;
+const WS_BASE = API_BASE
+  ? API_BASE.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:')
+  : `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}`;
+
 // ── API ───────────────────────────────────────────────────────────────────────
 async function api(method, path, body = null) {
   const opts = {
@@ -247,7 +259,7 @@ async function api(method, path, body = null) {
     headers: { 'Content-Type': 'application/json', ...(TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {}) },
   };
   if (body) opts.body = JSON.stringify(body);
-  const r = await fetch(`/api${path}`, opts);
+  const r = await fetch(`${API_PREFIX}${path}`, opts);
   const data = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(data.detail || r.statusText);
   return data;
@@ -540,8 +552,7 @@ function scanLivePage(el, scan) {
     log.scrollTop = log.scrollHeight;
   }
 
-  const wsProto = location.protocol === 'https:' ? 'wss' : 'ws';
-  const ws = new WebSocket(`${wsProto}://${location.host}/api/ws/${scan.id}?token=${TOKEN}`);
+  const ws = new WebSocket(`${WS_BASE}/api/ws/${scan.id}?token=${TOKEN}`);
   activeWs = ws;
 
   ws.onmessage = e => {
@@ -620,9 +631,9 @@ async function scanDetailPage(el, { id }) {
           <div class="page-sub" style="margin-top:4px">${scan.profile} profile · ${relTime(scan.created_at)} · ${s.pages_crawled||0} pages · ${s.duration_s||0}s</div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <a class="btn btn-ghost btn-sm" href="/api/scans/${id}/report/html?token=${TOKEN}" target="_blank">HTML Report</a>
-          <a class="btn btn-ghost btn-sm" href="/api/scans/${id}/report/markdown?token=${TOKEN}" target="_blank">Markdown</a>
-          <a class="btn btn-ghost btn-sm" href="/api/scans/${id}/report/json?token=${TOKEN}" target="_blank">JSON</a>
+          <a class="btn btn-ghost btn-sm" href="${API_PREFIX}/scans/${id}/report/html?token=${TOKEN}" target="_blank">HTML Report</a>
+          <a class="btn btn-ghost btn-sm" href="${API_PREFIX}/scans/${id}/report/markdown?token=${TOKEN}" target="_blank">Markdown</a>
+          <a class="btn btn-ghost btn-sm" href="${API_PREFIX}/scans/${id}/report/json?token=${TOKEN}" target="_blank">JSON</a>
           <button class="btn btn-danger btn-sm" onclick="deleteScan('${id}')">Delete</button>
         </div>
       </div>
@@ -771,13 +782,16 @@ async function changePassword() {
 
 // ── Report download helper (pass token in query) ───────────────────────────────
 function openReport(id, fmt) {
-  window.open(`/api/scans/${id}/report/${fmt}?token=${TOKEN}`, '_blank');
+  window.open(`${API_PREFIX}/scans/${id}/report/${fmt}?token=${TOKEN}`, '_blank');
 }
 
 // ── Utility ───────────────────────────────────────────────────────────────────
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
+const backendHint = document.getElementById('backend-hint');
+if (backendHint && API_BASE) backendHint.textContent = `API: ${API_BASE}`;
+
 if (TOKEN && USER) {
   bootApp();
 } else {
