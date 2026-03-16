@@ -1,14 +1,9 @@
-"""
-api/models.py — Pydantic v2 models for all API request and response schemas.
-"""
-
+"""api/models.py"""
 from __future__ import annotations
 from datetime import datetime
 from typing import Any, Optional
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
-
-# ── Auth ──────────────────────────────────────────────────────────────────────
 
 class UserRegister(BaseModel):
     username: str = Field(min_length=3, max_length=32)
@@ -33,6 +28,9 @@ class UserResponse(BaseModel):
     username: str
     email: str
     created_at: datetime
+    is_admin: bool = False
+    is_active: bool = True
+    last_login: Optional[datetime] = None
 
 
 class TokenResponse(BaseModel):
@@ -41,15 +39,12 @@ class TokenResponse(BaseModel):
     user: UserResponse
 
 
-# ── Scan config ───────────────────────────────────────────────────────────────
-
 class ScanConfig(BaseModel):
-    target: str = Field(description="Root URL to scan")
-    profile: str = Field(default="standard", description="quick | standard | full")
+    target: str
+    profile: str = "standard"
     max_depth: int = Field(default=3, ge=1, le=10)
     max_pages: int = Field(default=100, ge=1, le=500)
     delay: float = Field(default=0.3, ge=0.0, le=5.0)
-    # Feature toggles (override profile defaults)
     run_xss: Optional[bool] = None
     run_sqli: Optional[bool] = None
     run_blind_sqli: Optional[bool] = None
@@ -69,8 +64,6 @@ class ScanConfig(BaseModel):
         return v.rstrip("/")
 
 
-# ── Scan status ───────────────────────────────────────────────────────────────
-
 class ScanSummary(BaseModel):
     total: int = 0
     critical: int = 0
@@ -87,10 +80,12 @@ class ScanListItem(BaseModel):
     id: str
     target: str
     profile: str
-    status: str        # pending | running | complete | error
+    status: str
     summary: ScanSummary
     created_at: datetime
     completed_at: Optional[datetime] = None
+    user_id: Optional[str] = None
+    username: Optional[str] = None
 
 
 class ScanDetail(ScanListItem):
@@ -98,8 +93,6 @@ class ScanDetail(ScanListItem):
     findings: list[dict[str, Any]] = []
     errors: list[str] = []
 
-
-# ── Report diff ───────────────────────────────────────────────────────────────
 
 class DiffRequest(BaseModel):
     scan_id_before: str
@@ -110,12 +103,40 @@ class DiffResult(BaseModel):
     new_findings: list[dict[str, Any]]
     resolved_findings: list[dict[str, Any]]
     unchanged_count: int
-    regression_count: int   # severity increased
-    improvement_count: int  # severity decreased
+    regression_count: int
+    improvement_count: int
 
 
-# ── WebSocket messages ────────────────────────────────────────────────────────
+# ── Admin models ──────────────────────────────────────────────────────────────
+
+class AdminUserUpdate(BaseModel):
+    is_active: Optional[bool] = None
+    is_admin:  Optional[bool] = None
+
+
+class AuditEntry(BaseModel):
+    id: str
+    timestamp: datetime
+    action: str
+    username: Optional[str] = None
+    user_id:  Optional[str] = None
+    ip:       Optional[str] = None
+    detail:   Optional[str] = None
+    success:  bool = True
+
+
+class SystemStats(BaseModel):
+    total_users: int = 0
+    active_users: int = 0
+    admin_users: int = 0
+    total_scans: int = 0
+    running_scans: int = 0
+    complete_scans: int = 0
+    total_findings: int = 0
+    critical_findings: int = 0
+    failed_logins_24h: int = 0
+
 
 class WSMessage(BaseModel):
-    type: str    # phase | progress | finding | complete | error
+    type: str
     data: dict[str, Any] = {}
