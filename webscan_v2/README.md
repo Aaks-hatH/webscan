@@ -53,6 +53,20 @@ The API docs are at `http://localhost:8000/api/docs`.
 
 ---
 
+### Use the frontend with a remote backend
+
+If you host `static/index.html` separately (Netlify, Vercel, GitHub Pages, etc.), set the backend base URL one of these ways:
+
+1. Query param (quick test):
+   - `https://your-frontend.example/?api=https://webscan-egti.onrender.com`
+2. Browser local storage (persistent):
+   - `localStorage.setItem("ws_api_base", "https://webscan-egti.onrender.com")`
+   - Refresh the page.
+3. Global variable before the app script loads:
+   - `window.WEBSCAN_API_BASE = "https://webscan-egti.onrender.com"`
+
+When not set, the frontend uses same-origin (`/api`) automatically.
+
 ## Deploy to Render
 
 1. Push this folder to a GitHub repository
@@ -63,6 +77,7 @@ The API docs are at `http://localhost:8000/api/docs`.
    - `MONGODB_URL` — your MongoDB Atlas connection string
    - `JWT_SECRET` — long random string (Render can auto-generate)
    - `ENVIRONMENT` — `production`
+   - `MONGODB_DISABLE_OCSP_CHECK` — `true` (recommended on restrictive egress networks)
 
 Free MongoDB Atlas cluster: https://www.mongodb.com/atlas/database
 

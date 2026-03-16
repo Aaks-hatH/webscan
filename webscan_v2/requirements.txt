@@ -10,3 +10,4 @@ passlib[bcrypt]>=1.7.4
 python-multipart>=0.0.9
 pydantic[email]>=2.6.0
 python-dotenv>=1.0.0
+certifi>=2024.2.2
