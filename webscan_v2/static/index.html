@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WebScan</title>
+<style>
+:root {
+  --bg:       #0d1117;
+  --bg2:      #161b22;
+  --bg3:      #1c2128;
+  --border:   #30363d;
+  --border2:  #21262d;
+  --text:     #e6edf3;
+  --text2:    #8b949e;
+  --text3:    #484f58;
+  --accent:   #58a6ff;
+  --green:    #3fb950;
+  --red:      #f85149;
+  --orange:   #d29922;
+  --purple:   #bc8cff;
+  --crit:     #ff4444;
+  --high:     #f97316;
+  --med:      #eab308;
+  --low:      #3b82f6;
+  --info:     #6b7280;
+  --radius:   8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+a{color:var(--accent);text-decoration:none}
+
+/* ── Layout ── */
+#app{display:flex;min-height:100vh}
+nav{width:220px;min-height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+.nav-logo{padding:20px 16px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.nav-logo svg{flex-shrink:0}
+.nav-logo span{font-size:1rem;font-weight:700;color:var(--text);letter-spacing:-.02em}
+.nav-logo .version{font-size:.65rem;color:var(--text3);margin-left:auto;background:var(--bg3);padding:2px 6px;border-radius:10px}
+.nav-links{padding:8px 0;flex:1}
+.nav-link{display:flex;align-items:center;gap:10px;padding:8px 16px;cursor:pointer;color:var(--text2);border-left:2px solid transparent;transition:all .15s;font-size:.85rem;user-select:none}
+.nav-link:hover{background:var(--bg3);color:var(--text)}
+.nav-link.active{color:var(--accent);border-left-color:var(--accent);background:rgba(88,166,255,.06)}
+.nav-link .icon{width:16px;height:16px;opacity:.7}
+.nav-footer{padding:12px 16px;border-top:1px solid var(--border);font-size:.75rem;color:var(--text3)}
+
+main{margin-left:220px;flex:1;padding:24px;max-width:1200px}
+
+/* ── Auth pages ── */
+#auth-wrapper{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)}
+.auth-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:2rem;width:360px}
+.auth-card h1{font-size:1.3rem;margin-bottom:.25rem}
+.auth-card p{color:var(--text2);font-size:.85rem;margin-bottom:1.5rem}
+.auth-tabs{display:flex;gap:0;margin-bottom:1.5rem;background:var(--bg);border-radius:6px;padding:3px}
+.auth-tab{flex:1;text-align:center;padding:6px;cursor:pointer;border-radius:4px;font-size:.85rem;color:var(--text2);transition:all .15s}
+.auth-tab.active{background:var(--bg3);color:var(--text)}
+
+/* ── Forms ── */
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:.8rem;color:var(--text2);margin-bottom:4px;font-weight:500}
+.form-group input,.form-group select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;color:var(--text);font-size:.9rem;transition:border .15s;outline:none}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent)}
+.form-group input::placeholder{color:var(--text3)}
+.error-msg{background:rgba(248,81,73,.12);border:1px solid rgba(248,81,73,.3);border-radius:6px;padding:8px 12px;color:var(--red);font-size:.82rem;margin-bottom:1rem}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius);cursor:pointer;font-size:.85rem;font-weight:500;border:none;transition:all .15s;white-space:nowrap;outline:none}
+.btn-primary{background:var(--accent);color:#0d1117}
+.btn-primary:hover{background:#79b8ff}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--text2);color:var(--text)}
+.btn-danger{background:rgba(248,81,73,.15);color:var(--red);border:1px solid rgba(248,81,73,.3)}
+.btn-danger:hover{background:rgba(248,81,73,.25)}
+.btn-sm{padding:5px 10px;font-size:.78rem}
+.btn-full{width:100%;justify-content:center}
+
+/* ── Cards ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:1rem;font-weight:600}
+.section-title{font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:12px;font-weight:600}
+
+/* ── Dashboard ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px}
+.stat-card .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:4px}
+.stat-card .value{font-size:1.8rem;font-weight:700}
+.stat-card .sub{font-size:.75rem;color:var(--text3);margin-top:2px}
+
+/* ── Scan list ── */
+.scan-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border .15s}
+.scan-item:hover{border-color:var(--accent)}
+.scan-item .scan-target{font-weight:500;font-size:.9rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scan-item .scan-meta{font-size:.75rem;color:var(--text2)}
+.scan-status{font-size:.72rem;font-weight:600;padding:3px 8px;border-radius:10px;letter-spacing:.04em;white-space:nowrap}
+.status-pending{background:rgba(107,114,128,.2);color:#9ca3af}
+.status-running{background:rgba(88,166,255,.15);color:var(--accent)}
+.status-complete{background:rgba(63,185,80,.15);color:var(--green)}
+.status-error{background:rgba(248,81,73,.15);color:var(--red)}
+
+/* ── New scan form ── */
+.new-scan-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:24px}
+.profile-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.profile-btn{padding:10px 8px;border:1px solid var(--border);border-radius:8px;cursor:pointer;text-align:center;transition:all .15s;background:var(--bg)}
+.profile-btn:hover{border-color:var(--accent)}
+.profile-btn.selected{border-color:var(--accent);background:rgba(88,166,255,.08)}
+.profile-btn .pname{font-size:.82rem;font-weight:600;color:var(--text)}
+.profile-btn .pdesc{font-size:.7rem;color:var(--text2);margin-top:2px;line-height:1.3}
+.toggles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.toggle-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border:1px solid var(--border2);border-radius:6px;cursor:pointer;font-size:.82rem}
+.toggle-item input{accent-color:var(--accent)}
+
+/* ── Progress / live scan ── */
+.progress-bar-wrap{background:var(--bg);border-radius:4px;height:6px;margin:8px 0;overflow:hidden}
+.progress-bar{height:100%;background:var(--accent);border-radius:4px;transition:width .3s}
+.phase-label{font-size:.78rem;color:var(--text2);display:flex;justify-content:space-between}
+.live-findings{max-height:300px;overflow-y:auto;margin-top:12px}
+.live-finding-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px solid var(--border2);font-size:.8rem;animation:fadein .3s}
+@keyframes fadein{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.log-box{background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:10px 12px;max-height:200px;overflow-y:auto;font-size:.78rem;font-family:monospace;color:var(--text2)}
+.log-line{line-height:1.6}
+.log-line.phase{color:var(--accent);font-weight:600}
+.log-line.finding{color:var(--orange)}
+.log-line.error{color:var(--red)}
+
+/* ── Findings ── */
+.findings-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.sev-filter{padding:4px 10px;border-radius:10px;border:1px solid var(--border);background:var(--bg);cursor:pointer;font-size:.78rem;font-weight:600;transition:all .15s}
+.sev-filter.active{border-color:currentColor}
+.finding-card{border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;background:var(--bg2)}
+.finding-header{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;border-left:3px solid currentColor}
+.finding-header:hover{background:var(--bg3)}
+.finding-body{padding:14px;border-top:1px solid var(--border);display:none}
+.finding-body.open{display:block}
+.sev-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.finding-type{font-weight:600;font-size:.88rem;flex:1}
+.meta-grid{display:grid;grid-template-columns:140px 1fr;gap:4px 12px;font-size:.82rem;margin:8px 0 12px}
+.meta-grid .mk{color:var(--text2);font-weight:500}
+.meta-grid .mv{color:var(--text);font-family:monospace;font-size:.78rem;word-break:break-all}
+pre.code-block{background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:10px;font-size:.78rem;color:#a5d6ff;overflow-x:auto;white-space:pre-wrap;word-break:break-all;margin:6px 0}
+.mitigation-box{background:rgba(63,185,80,.08);border-left:3px solid var(--green);border-radius:0 6px 6px 0;padding:10px 12px;font-size:.82rem;color:#7ee787;margin-top:8px}
+
+/* ── Misc ── */
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.7rem;font-weight:700;letter-spacing:.04em}
+.empty-state{text-align:center;padding:48px 24px;color:var(--text3)}
+.empty-state svg{opacity:.3;margin-bottom:12px}
+.empty-state p{font-size:.9rem}
+.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tag{display:inline-block;padding:1px 6px;border-radius:4px;font-size:.7rem;background:var(--bg3);color:var(--text2);border:1px solid var(--border2)}
+.flex{display:flex} .gap-2{gap:8px} .items-center{align-items:center} .flex-1{flex:1}
+.mt-1{margin-top:4px} .mt-2{margin-top:8px} .mt-3{margin-top:12px} .mt-4{margin-top:16px}
+.text-sm{font-size:.82rem} .text-xs{font-size:.72rem} .text-muted{color:var(--text2)} .text-danger{color:var(--red)}
+.page-title{font-size:1.4rem;font-weight:700;margin-bottom:4px}
+.page-sub{color:var(--text2);font-size:.85rem;margin-bottom:20px}
+code{font-family:monospace;background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:.82rem}
+.diff-section{margin-bottom:16px}
+.diff-section h3{font-size:.82rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.diff-new{border-left:3px solid var(--red)}
+.diff-resolved{border-left:3px solid var(--green)}
+</style>
+</head>
+<body>
+
+<div id="auth-wrapper" style="display:none">
+  <div class="auth-card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="14" fill="#58a6ff" opacity=".15"/><path d="M14 6L20 10V14C20 17.5 17.5 20.5 14 22C10.5 20.5 8 17.5 8 14V10L14 6Z" stroke="#58a6ff" stroke-width="1.5" fill="none"/><path d="M11 14l2 2 4-4" stroke="#58a6ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div>
+        <h1 style="font-size:1.2rem">WebScan</h1>
+        <p style="margin:0;font-size:.75rem;color:var(--text3)">Security Scanner v2</p>
+      </div>
+    </div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="showTab('login')">Sign in</div>
+      <div class="auth-tab" onclick="showTab('register')">Create account</div>
+    </div>
+    <div id="auth-error" class="error-msg" style="display:none"></div>
+    <div id="tab-login">
+      <div class="form-group"><label>Username</label><input id="login-user" type="text" placeholder="your-username" autocomplete="username"></div>
+      <div class="form-group"><label>Password</label><input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="btn btn-primary btn-full" onclick="doLogin()">
+        <span id="login-spinner" class="spinner" style="display:none"></span>
+        Sign in
+      </button>
+    </div>
+    <div id="tab-register" style="display:none">
+      <div class="form-group"><label>Username</label><input id="reg-user" type="text" placeholder="coolhacker" autocomplete="username"></div>
+      <div class="form-group"><label>Email</label><input id="reg-email" type="email" placeholder="you@example.com" autocomplete="email"></div>
+      <div class="form-group"><label>Password <span class="text-muted">(min 8 chars)</span></label><input id="reg-pass" type="password" placeholder="••••••••" autocomplete="new-password"></div>
+      <button class="btn btn-primary btn-full" onclick="doRegister()">Create account</button>
+    </div>
+    <p style="text-align:center;margin-top:1rem;font-size:.75rem;color:var(--text3)">Authorized testing environments only.</p>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <nav>
+    <div class="nav-logo">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="10" fill="#58a6ff" opacity=".15"/><path d="M10 3L16 7V11C16 14.5 13.5 17.5 10 19C6.5 17.5 4 14.5 4 11V7L10 3Z" stroke="#58a6ff" stroke-width="1.3" fill="none"/></svg>
+      <span>WebScan</span>
+      <span class="version">v2</span>
+    </div>
+    <div class="nav-links">
+      <div class="nav-link active" data-page="dashboard" onclick="navigate('dashboard')">
+        <svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h5v5H2V2zm0 7h5v5H2V9zm7-7h5v5H9V2zm0 7h5v5H9V9z"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-link" data-page="new-scan" onclick="navigate('new-scan')">
+        <svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a6 6 0 100 12A6 6 0 008 2zm1 3v2h2a1 1 0 110 2H9v2a1 1 0 11-2 0V9H5a1 1 0 110-2h2V5a1 1 0 112 0z"/></svg>
+        New Scan
+      </div>
+      <div class="nav-link" data-page="scans" onclick="navigate('scans')">
+        <svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M1 3a1 1 0 011-1h12a1 1 0 010 2H2a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 010 2H2a1 1 0 01-1-1zm0 4a1 1 0 011-1h8a1 1 0 010 2H2a1 1 0 01-1-1z"/></svg>
+        Scan History
+      </div>
+      <div class="nav-link" data-page="diff" onclick="navigate('diff')">
+        <svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 3.72a.75.75 0 011.06 1.06L2.56 7h10.88l-2.22-2.22a.75.75 0 011.06-1.06l3.5 3.5a.75.75 0 010 1.06l-3.5 3.5a.75.75 0 11-1.06-1.06l2.22-2.22H2.56l2.22 2.22a.75.75 0 11-1.06 1.06l-3.5-3.5a.75.75 0 010-1.06l3.5-3.5z"/></svg>
+        Report Diff
+      </div>
+    </div>
+    <div class="nav-footer">
+      <div style="margin-bottom:6px;color:var(--text2)" id="nav-username"></div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="navigate('settings')">Settings</button>
+        <button class="btn btn-ghost btn-sm" onclick="doLogout()">Sign out</button>
+      </div>
+    </div>
+  </nav>
+
+  <main id="page-content"></main>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+let TOKEN = localStorage.getItem('ws_token') || '';
+let USER  = JSON.parse(localStorage.getItem('ws_user') || 'null');
+let currentPage = 'dashboard';
+let activeWs = null;
+let scanPollers = {};
+
+// ── API ───────────────────────────────────────────────────────────────────────
+async function api(method, path, body = null) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json', ...(TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {}) },
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(`/api${path}`, opts);
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.detail || r.statusText);
+  return data;
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+function showAuthError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg; el.style.display = 'block';
+}
+function showTab(tab) {
+  document.getElementById('auth-error').style.display = 'none';
+  document.getElementById('tab-login').style.display    = tab === 'login'    ? '' : 'none';
+  document.getElementById('tab-register').style.display = tab === 'register' ? '' : 'none';
+  document.querySelectorAll('.auth-tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0) === (tab === 'login'));
+  });
+}
+async function doLogin() {
+  const sp = document.getElementById('login-spinner');
+  sp.style.display = '';
+  try {
+    const d = await api('POST', '/auth/login', {
+      username: document.getElementById('login-user').value,
+      password: document.getElementById('login-pass').value,
+    });
+    setSession(d);
+  } catch (e) { showAuthError(e.message); } finally { sp.style.display = 'none'; }
+}
+async function doRegister() {
+  try {
+    const d = await api('POST', '/auth/register', {
+      username: document.getElementById('reg-user').value,
+      email:    document.getElementById('reg-email').value,
+      password: document.getElementById('reg-pass').value,
+    });
+    setSession(d);
+  } catch (e) { showAuthError(e.message); }
+}
+function setSession(d) {
+  TOKEN = d.access_token; USER = d.user;
+  localStorage.setItem('ws_token', TOKEN);
+  localStorage.setItem('ws_user', JSON.stringify(USER));
+  bootApp();
+}
+function doLogout() {
+  TOKEN = ''; USER = null;
+  localStorage.removeItem('ws_token'); localStorage.removeItem('ws_user');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('auth-wrapper').style.display = 'flex';
+  showTab('login');
+}
+function bootApp() {
+  document.getElementById('auth-wrapper').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('nav-username').textContent = USER?.username || '';
+  navigate('dashboard');
+}
+
+// ── Enter key on auth ─────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (document.getElementById('tab-login').style.display !== 'none') doLogin();
+    else doRegister();
+  }
+});
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function navigate(page, data = null) {
+  currentPage = page;
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.toggle('active', l.dataset.page === page));
+  const content = document.getElementById('page-content');
+  const pages = { dashboard, 'new-scan': newScan, scans: scanHistory, diff: reportDiff, settings: settingsPage };
+  content.innerHTML = '';
+  if (pages[page]) pages[page](content, data);
+}
+
+// ── Severity helpers ──────────────────────────────────────────────────────────
+const SEV_COLOR = { CRITICAL:'#ff4444', HIGH:'#f97316', MEDIUM:'#eab308', LOW:'#3b82f6', INFO:'#6b7280' };
+const SEV_BG    = { CRITICAL:'rgba(255,68,68,.12)', HIGH:'rgba(249,115,22,.12)', MEDIUM:'rgba(234,179,8,.12)', LOW:'rgba(59,130,246,.12)', INFO:'rgba(107,114,128,.12)' };
+function sevBadge(s) {
+  return `<span class="badge" style="background:${SEV_BG[s]||SEV_BG.INFO};color:${SEV_COLOR[s]||SEV_COLOR.INFO}">${s}</span>`;
+}
+function statusBadge(s) {
+  return `<span class="scan-status status-${s}">${s.toUpperCase()}</span>`;
+}
+function relTime(iso) {
+  if (!iso) return '';
+  const d = Math.round((Date.now() - new Date(iso)) / 1000);
+  if (d < 60)   return `${d}s ago`;
+  if (d < 3600) return `${Math.floor(d/60)}m ago`;
+  if (d < 86400)return `${Math.floor(d/3600)}h ago`;
+  return new Date(iso).toLocaleDateString();
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+async function dashboard(el) {
+  el.innerHTML = `<div class="page-title">Dashboard</div><div class="page-sub">Overview of your security scans</div><div id="dash-body"><div style="display:flex;gap:12px;align-items:center"><div class="spinner"></div><span class="text-muted">Loading…</span></div></div>`;
+  try {
+    const scans = await api('GET', '/scans?limit=100');
+    const total = scans.length;
+    const complete = scans.filter(s => s.status === 'complete');
+    const totalFindings = complete.reduce((a, s) => a + (s.summary?.total || 0), 0);
+    const criticals     = complete.reduce((a, s) => a + (s.summary?.critical || 0), 0);
+    const recent = scans.slice(0, 5);
+    document.getElementById('dash-body').innerHTML = `
+      <div class="stats-grid">
+        <div class="stat-card"><div class="label">Total Scans</div><div class="value">${total}</div></div>
+        <div class="stat-card"><div class="label">Findings</div><div class="value">${totalFindings}</div></div>
+        <div class="stat-card"><div class="label">Criticals</div><div class="value" style="color:var(--crit)">${criticals}</div></div>
+        <div class="stat-card"><div class="label">Running</div><div class="value" style="color:var(--accent)">${scans.filter(s=>s.status==='running').length}</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Recent Scans</div>
+          <button class="btn btn-primary btn-sm" onclick="navigate('new-scan')">+ New Scan</button>
+        </div>
+        ${recent.length ? recent.map(s => scanItemHtml(s)).join('') : '<div class="empty-state"><p>No scans yet. Start your first scan.</p></div>'}
+        ${total > 5 ? `<div style="text-align:center;margin-top:12px"><button class="btn btn-ghost btn-sm" onclick="navigate('scans')">View all ${total} scans →</button></div>` : ''}
+      </div>`;
+  } catch(e) {
+    document.getElementById('dash-body').innerHTML = `<div class="error-msg">${e.message}</div>`;
+  }
+}
+
+function scanItemHtml(s) {
+  return `<div class="scan-item" onclick="openScanDetail('${s.id}')">
+    <div style="flex:1;min-width:0">
+      <div class="scan-target">${s.target}</div>
+      <div class="scan-meta mt-1">${relTime(s.created_at)} · ${s.profile} profile · ${s.summary?.pages_crawled||0} pages</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
+      ${s.status === 'complete' ? `
+        <span style="color:var(--crit);font-size:.75rem;font-weight:600">${s.summary?.critical||0} CRIT</span>
+        <span style="color:var(--high);font-size:.75rem;font-weight:600">${s.summary?.high||0} HIGH</span>
+      ` : ''}
+      ${statusBadge(s.status)}
+    </div>
+  </div>`;
+}
+
+// ── New Scan ──────────────────────────────────────────────────────────────────
+const PROFILES = {
+  quick:    { desc:'Headers & exposure only', icon:'⚡' },
+  standard: { desc:'Full input testing',      icon:'🎯' },
+  full:     { desc:'Everything incl. blind',  icon:'🔬' },
+  api:      { desc:'API & JSON endpoints',    icon:'🔌' },
+};
+const TOGGLES = [
+  { key:'run_xss',       label:'Reflected XSS' },
+  { key:'run_sqli',      label:'Error SQLi' },
+  { key:'run_blind_sqli',label:'Blind SQLi (slow)' },
+  { key:'run_stored_xss',label:'Stored XSS' },
+  { key:'run_csrf',      label:'CSRF Detection' },
+  { key:'run_idor',      label:'IDOR Detection' },
+  { key:'run_headers',   label:'Security Headers' },
+  { key:'run_redirects', label:'Open Redirects' },
+  { key:'run_exposure',  label:'File Exposure' },
+  { key:'run_info_leak', label:'Info Leaks' },
+];
+
+let selectedProfile = 'standard';
+
+function newScan(el) {
+  el.innerHTML = `
+    <div class="page-title">New Scan</div>
+    <div class="page-sub">Configure and launch a vulnerability scan</div>
+    <div id="scan-error" class="error-msg" style="display:none"></div>
+    <div class="new-scan-card">
+      <div class="section-title">Target URL</div>
+      <div class="form-group" style="margin-bottom:20px">
+        <input id="scan-target" type="url" placeholder="http://localhost:3000" style="font-size:1rem;padding:12px">
+      </div>
+      <div class="section-title">Scan Profile</div>
+      <div class="profile-grid">
+        ${Object.entries(PROFILES).map(([k,v]) => `
+          <div class="profile-btn ${k===selectedProfile?'selected':''}" onclick="selectProfile('${k}')" id="prof-${k}">
+            <div style="font-size:1.2rem">${v.icon}</div>
+            <div class="pname">${k.charAt(0).toUpperCase()+k.slice(1)}</div>
+            <div class="pdesc">${v.desc}</div>
+          </div>`).join('')}
+      </div>
+      <div class="section-title">Advanced Options</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+        <div class="form-group" style="margin:0"><label>Max Depth</label><select id="scan-depth">${[1,2,3,4,5].map(n=>`<option ${n===3?'selected':''}>${n}</option>`).join('')}</select></div>
+        <div class="form-group" style="margin:0"><label>Max Pages</label><select id="scan-pages">${[25,50,100,200,500].map(n=>`<option ${n===100?'selected':''}>${n}</option>`).join('')}</select></div>
+        <div class="form-group" style="margin:0"><label>Delay (s)</label><select id="scan-delay">${['0.1','0.3','0.5','1.0','2.0'].map(n=>`<option ${n==='0.3'?'selected':''}>${n}</option>`).join('')}</select></div>
+      </div>
+      <div class="section-title">Detection Modules <span class="text-muted text-xs">(override profile)</span></div>
+      <div class="toggles-grid">
+        ${TOGGLES.map(t => `<label class="toggle-item"><input type="checkbox" id="t-${t.key}"> ${t.label}</label>`).join('')}
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn btn-primary" onclick="launchScan()" id="launch-btn">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4.5 2.5a1 1 0 00-1.5.87v9.26a1 1 0 001.5.87l8-4.63a1 1 0 000-1.74l-8-4.63z"/></svg>
+        Launch Scan
+      </button>
+      <span id="launch-status" class="text-muted text-sm"></span>
+    </div>`;
+  selectProfile(selectedProfile);
+}
+
+function selectProfile(p) {
+  selectedProfile = p;
+  document.querySelectorAll('.profile-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById(`prof-${p}`)?.classList.add('selected');
+}
+
+async function launchScan() {
+  const target = document.getElementById('scan-target').value.trim();
+  if (!target) { showScanError('Please enter a target URL'); return; }
+
+  const overrides = {};
+  TOGGLES.forEach(t => {
+    const el = document.getElementById(`t-${t.key}`);
+    if (el && el.checked) overrides[t.key] = true;
+  });
+
+  const btn = document.getElementById('launch-btn');
+  btn.disabled = true;
+  document.getElementById('launch-status').textContent = 'Starting scan…';
+  document.getElementById('scan-error').style.display = 'none';
+
+  try {
+    const scan = await api('POST', '/scans', {
+      target,
+      profile:   selectedProfile,
+      max_depth: +document.getElementById('scan-depth').value,
+      max_pages: +document.getElementById('scan-pages').value,
+      delay:     +document.getElementById('scan-delay').value,
+      ...overrides,
+    });
+    navigate('scan-live', scan);
+  } catch(e) {
+    showScanError(e.message);
+    btn.disabled = false;
+    document.getElementById('launch-status').textContent = '';
+  }
+}
+function showScanError(msg) {
+  const el = document.getElementById('scan-error');
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+
+// ── Live Scan View ────────────────────────────────────────────────────────────
+function navigate(page, data) {
+  currentPage = page;
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.toggle('active', l.dataset.page === page));
+  const el = document.getElementById('page-content');
+  el.innerHTML = '';
+  if (page === 'dashboard')  dashboard(el);
+  else if (page === 'new-scan') newScan(el);
+  else if (page === 'scans') scanHistory(el);
+  else if (page === 'diff')  reportDiff(el);
+  else if (page === 'settings') settingsPage(el);
+  else if (page === 'scan-live') scanLivePage(el, data);
+  else if (page === 'scan-detail') scanDetailPage(el, data);
+}
+
+function scanLivePage(el, scan) {
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+      <button class="btn btn-ghost btn-sm" onclick="navigate('scans')">← Back</button>
+      <div class="page-title" style="margin:0">Scanning…</div>
+      <div class="spinner"></div>
+    </div>
+    <div class="page-sub">${scan.target}</div>
+    <div class="card mt-3">
+      <div id="phase-label" class="phase-label"><span>Initialising…</span><span id="progress-pct"></span></div>
+      <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+      <div class="log-box mt-2" id="scan-log"></div>
+      <div id="live-findings-header" style="display:none" class="section-title mt-3">Live Findings</div>
+      <div class="live-findings" id="live-findings"></div>
+    </div>
+    <div id="scan-complete" style="display:none" class="mt-3">
+      <button class="btn btn-primary" onclick="openScanDetail('${scan.id}')">View Full Report →</button>
+    </div>`;
+
+  const log = document.getElementById('scan-log');
+  const findings = document.getElementById('live-findings');
+  let findingCount = 0;
+  const phaseProgress = { crawling:10, discovery:20, headers:30, csrf:35, info_leak:45, exposure:55, stored_xss:65, fuzzing:100 };
+
+  function addLog(text, cls='') {
+    const d = document.createElement('div');
+    d.className = `log-line ${cls}`;
+    d.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+    log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  const wsProto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const ws = new WebSocket(`${wsProto}://${location.host}/api/ws/${scan.id}?token=${TOKEN}`);
+  activeWs = ws;
+
+  ws.onmessage = e => {
+    const msg = JSON.parse(e.data);
+    if (msg.type === 'phase') {
+      const pct = phaseProgress[msg.data.phase] || 0;
+      document.getElementById('progress-bar').style.width = pct + '%';
+      document.getElementById('phase-label').querySelector('span').textContent = msg.data.message;
+      addLog(msg.data.message, 'phase');
+    } else if (msg.type === 'progress') {
+      if (msg.data.current && msg.data.total) {
+        const pct = Math.min(95, 65 + (msg.data.current / msg.data.total) * 30);
+        document.getElementById('progress-bar').style.width = pct + '%';
+        document.getElementById('progress-pct').textContent = `${msg.data.current}/${msg.data.total}`;
+      }
+      addLog(msg.data.message);
+    } else if (msg.type === 'finding') {
+      findingCount++;
+      document.getElementById('live-findings-header').style.display = '';
+      const f = msg.data;
+      const row = document.createElement('div');
+      row.className = 'live-finding-row';
+      row.innerHTML = `<span class="sev-dot" style="background:${SEV_COLOR[f.severity]||SEV_COLOR.INFO}"></span><span style="color:${SEV_COLOR[f.severity]};font-weight:600;width:70px">${f.severity}</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.vuln_type}</span><span class="text-xs text-muted" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.url}</span>`;
+      findings.appendChild(row);
+      findings.scrollTop = findings.scrollHeight;
+      addLog(`Finding: ${f.vuln_type} [${f.severity}]`, 'finding');
+    } else if (msg.type === 'complete') {
+      document.getElementById('progress-bar').style.width = '100%';
+      document.getElementById('phase-label').querySelector('span').textContent = 'Scan complete!';
+      document.getElementById('progress-pct').textContent = '';
+      const s = msg.data.summary;
+      addLog(`Scan complete — ${s.total} findings (${s.critical} CRIT, ${s.high} HIGH, ${s.medium} MED)`, 'phase');
+      document.getElementById('scan-complete').style.display = '';
+    } else if (msg.type === 'error') {
+      addLog(`Error: ${msg.data.message}`, 'error');
+      document.getElementById('scan-complete').style.display = '';
+    }
+  };
+  ws.onerror = () => addLog('WebSocket error — check scan status in history', 'error');
+}
+
+// ── Scan History ──────────────────────────────────────────────────────────────
+async function scanHistory(el) {
+  el.innerHTML = `<div class="page-title">Scan History</div><div class="page-sub">All your vulnerability scans</div><div id="scans-body"><div style="display:flex;gap:10px;align-items:center"><div class="spinner"></div><span class="text-muted">Loading…</span></div></div>`;
+  try {
+    const scans = await api('GET', '/scans?limit=100');
+    const body  = document.getElementById('scans-body');
+    if (!scans.length) {
+      body.innerHTML = `<div class="empty-state"><p>No scans yet.</p><div class="mt-3"><button class="btn btn-primary" onclick="navigate('new-scan')">Start your first scan</button></div></div>`;
+      return;
+    }
+    body.innerHTML = `<div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn btn-primary btn-sm" onclick="navigate('new-scan')">+ New Scan</button></div>` + scans.map(s => scanItemHtml(s)).join('');
+  } catch(e) {
+    document.getElementById('scans-body').innerHTML = `<div class="error-msg">${e.message}</div>`;
+  }
+}
+
+// ── Scan Detail ───────────────────────────────────────────────────────────────
+async function openScanDetail(id) {
+  navigate('scan-detail', { id });
+}
+
+async function scanDetailPage(el, { id }) {
+  el.innerHTML = `<div style="display:flex;gap:10px;align-items:center;margin-bottom:16px"><button class="btn btn-ghost btn-sm" onclick="navigate('scans')">← Back</button><div class="spinner"></div><span class="text-muted">Loading scan…</span></div>`;
+  try {
+    const scan = await api('GET', `/scans/${id}`);
+    const s = scan.summary || {};
+    el.innerHTML = `
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="navigate('scans')">← Back</button>
+            <div class="page-title" style="margin:0">${scan.target}</div>
+            ${statusBadge(scan.status)}
+          </div>
+          <div class="page-sub" style="margin-top:4px">${scan.profile} profile · ${relTime(scan.created_at)} · ${s.pages_crawled||0} pages · ${s.duration_s||0}s</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a class="btn btn-ghost btn-sm" href="/api/scans/${id}/report/html?token=${TOKEN}" target="_blank">HTML Report</a>
+          <a class="btn btn-ghost btn-sm" href="/api/scans/${id}/report/markdown?token=${TOKEN}" target="_blank">Markdown</a>
+          <a class="btn btn-ghost btn-sm" href="/api/scans/${id}/report/json?token=${TOKEN}" target="_blank">JSON</a>
+          <button class="btn btn-danger btn-sm" onclick="deleteScan('${id}')">Delete</button>
+        </div>
+      </div>
+      <div class="stats-grid" style="margin-bottom:20px">
+        ${['CRITICAL','HIGH','MEDIUM','LOW','INFO'].map(sv => `
+          <div class="stat-card" style="border-left:3px solid ${SEV_COLOR[sv]}">
+            <div class="label" style="color:${SEV_COLOR[sv]}">${sv}</div>
+            <div class="value" style="color:${SEV_COLOR[sv]}">${(s[sv.toLowerCase()]||0)}</div>
+          </div>`).join('')}
+      </div>
+      <div id="findings-section">
+        ${renderFindings(scan.findings || [])}
+      </div>`;
+  } catch(e) {
+    el.innerHTML = `<div class="error-msg">${e.message}</div>`;
+  }
+}
+
+function renderFindings(findings) {
+  if (!findings.length) return '<div class="empty-state"><p>No vulnerabilities found.</p></div>';
+  const sevs = ['CRITICAL','HIGH','MEDIUM','LOW','INFO'];
+  const bySev = {};
+  findings.forEach(f => { (bySev[f.severity] = bySev[f.severity]||[]).push(f); });
+
+  return `
+    <div class="findings-filter">
+      <span class="text-muted text-xs" style="margin-right:4px">Filter:</span>
+      <span class="sev-filter active" onclick="filterFindings('ALL',this)" style="color:var(--text2)">All (${findings.length})</span>
+      ${sevs.filter(s=>bySev[s]).map(s=>`<span class="sev-filter" onclick="filterFindings('${s}',this)" style="color:${SEV_COLOR[s]}">${s} (${bySev[s].length})</span>`).join('')}
+    </div>
+    <div id="findings-list">
+      ${findings.map((f,i) => findingCardHtml(f, i)).join('')}
+    </div>`;
+}
+
+function filterFindings(sev, btn) {
+  document.querySelectorAll('.sev-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.finding-card').forEach(c => {
+    c.style.display = (sev === 'ALL' || c.dataset.sev === sev) ? '' : 'none';
+  });
+}
+
+function findingCardHtml(f, i) {
+  return `<div class="finding-card" data-sev="${f.severity}">
+    <div class="finding-header" style="color:${SEV_COLOR[f.severity]}" onclick="toggleFinding(${i})">
+      <span class="sev-dot" style="background:${SEV_COLOR[f.severity]}"></span>
+      ${sevBadge(f.severity)}
+      <span class="finding-type">${f.vuln_type}</span>
+      <span class="tag">${f.method}</span>
+      <span class="text-xs text-muted" style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.url}</span>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" id="chevron-${i}"><path d="M2 4l4 4 4-4"/></svg>
+    </div>
+    <div class="finding-body" id="finding-body-${i}">
+      <div class="meta-grid">
+        <span class="mk">URL</span><code class="mv">${esc(f.url)}</code>
+        <span class="mk">Parameter</span><code class="mv">${esc(f.param)}</code>
+        <span class="mk">CWE</span><span class="mv">${f.cwe||'N/A'}</span>
+        <span class="mk">Confidence</span><span class="mv">${f.confidence||'N/A'}</span>
+        <span class="mk">Indicator</span><code class="mv">${esc(f.response_indicator||'')}</code>
+      </div>
+      <div class="section-title">Description</div>
+      <p class="text-sm text-muted mt-1">${esc(f.description||'')}</p>
+      ${f.evidence_snippet?`<div class="section-title mt-2">Evidence</div><pre class="code-block">${esc(f.evidence_snippet)}</pre>`:''}
+      ${f.request_example?`<div class="section-title mt-2">Request</div><pre class="code-block">${esc(f.request_example)}</pre>`:''}
+      <div class="mitigation-box mt-2"><strong>Mitigation:</strong> ${esc(f.mitigation||'')}</div>
+    </div>
+  </div>`;
+}
+
+function toggleFinding(i) {
+  const body = document.getElementById(`finding-body-${i}`);
+  body.classList.toggle('open');
+}
+
+async function deleteScan(id) {
+  if (!confirm('Delete this scan and all its findings?')) return;
+  try {
+    await api('DELETE', `/scans/${id}`);
+    navigate('scans');
+  } catch(e) { alert(e.message); }
+}
+
+// ── Report Diff ───────────────────────────────────────────────────────────────
+async function reportDiff(el) {
+  const scans = await api('GET', '/scans?limit=100').catch(() => []);
+  const complete = scans.filter(s => s.status === 'complete');
+  const opts = complete.map(s => `<option value="${s.id}">${s.target} — ${relTime(s.created_at)}</option>`).join('');
+
+  el.innerHTML = `
+    <div class="page-title">Report Diff</div>
+    <div class="page-sub">Compare two scans to track fixed and new vulnerabilities</div>
+    <div class="card" style="max-width:600px">
+      <div class="form-group"><label>Before scan</label><select id="diff-before">${opts}</select></div>
+      <div class="form-group"><label>After scan</label><select id="diff-after">${opts}</select></div>
+      <button class="btn btn-primary" onclick="runDiff()">Compare</button>
+    </div>
+    <div id="diff-result" class="mt-3"></div>`;
+}
+
+async function runDiff() {
+  const before = document.getElementById('diff-before').value;
+  const after  = document.getElementById('diff-after').value;
+  if (before === after) { alert('Select two different scans.'); return; }
+  const res = document.getElementById('diff-result');
+  res.innerHTML = `<div class="spinner"></div>`;
+  try {
+    const d = await api('POST', '/reports/diff', { scan_id_before: before, scan_id_after: after });
+    res.innerHTML = `
+      <div class="stats-grid" style="max-width:500px">
+        <div class="stat-card" style="border-left:3px solid var(--red)"><div class="label">New Findings</div><div class="value" style="color:var(--red)">${d.new_findings.length}</div></div>
+        <div class="stat-card" style="border-left:3px solid var(--green)"><div class="label">Resolved</div><div class="value" style="color:var(--green)">${d.resolved_findings.length}</div></div>
+        <div class="stat-card"><div class="label">Unchanged</div><div class="value">${d.unchanged_count}</div></div>
+        <div class="stat-card" style="border-left:3px solid var(--orange)"><div class="label">Regressions</div><div class="value" style="color:var(--orange)">${d.regression_count}</div></div>
+      </div>
+      ${d.new_findings.length ? `<div class="diff-section mt-3"><h3 style="color:var(--red)">🔴 New Findings</h3>${d.new_findings.map((f,i)=>findingCardHtml(f,'n'+i)).join('')}</div>` : ''}
+      ${d.resolved_findings.length ? `<div class="diff-section mt-3"><h3 style="color:var(--green)">✅ Resolved</h3>${d.resolved_findings.map((f,i)=>findingCardHtml(f,'r'+i)).join('')}</div>` : ''}`;
+  } catch(e) { res.innerHTML = `<div class="error-msg">${e.message}</div>`; }
+}
+
+// ── Settings ──────────────────────────────────────────────────────────────────
+function settingsPage(el) {
+  el.innerHTML = `
+    <div class="page-title">Settings</div>
+    <div class="page-sub">Account settings</div>
+    <div class="card" style="max-width:440px">
+      <div class="section-title">Change Password</div>
+      <div id="pw-msg"></div>
+      <div class="form-group"><label>Current password</label><input id="pw-cur" type="password"></div>
+      <div class="form-group"><label>New password</label><input id="pw-new" type="password"></div>
+      <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
+    </div>`;
+}
+async function changePassword() {
+  const msg = document.getElementById('pw-msg');
+  try {
+    await api('PUT', '/users/me/password', {
+      current_password: document.getElementById('pw-cur').value,
+      new_password: document.getElementById('pw-new').value,
+    });
+    msg.innerHTML = '<div style="color:var(--green);margin-bottom:12px">Password updated.</div>';
+  } catch(e) {
+    msg.innerHTML = `<div class="error-msg">${e.message}</div>`;
+  }
+}
+
+// ── Report download helper (pass token in query) ───────────────────────────────
+function openReport(id, fmt) {
+  window.open(`/api/scans/${id}/report/${fmt}?token=${TOKEN}`, '_blank');
+}
+
+// ── Utility ───────────────────────────────────────────────────────────────────
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+if (TOKEN && USER) {
+  bootApp();
+} else {
+  document.getElementById('auth-wrapper').style.display = 'flex';
+}
+</script>
+</body>
+</html>
