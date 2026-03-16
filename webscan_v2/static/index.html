@@ -1010,9 +1010,9 @@ async function pageScanDetail(el, {id}) {
         <div class="flex gap-2 items-center" style="flex-wrap:wrap;margin-top:6px">
           <span class="text-muted text-sm">${scan.profile} &middot; ${relTime(scan.created_at)} &middot; ${s.pages_crawled||0} pages &middot; ${s.input_vectors||0} vectors &middot; ${s.duration_s||0}s</span>
           <div class="flex gap-2" style="margin-left:auto;flex-wrap:wrap">
-            <a class="report-btn" href="/api/scans/${id}/report/html?token=${TOKEN}" target="_blank">HTML Report</a>
-            <a class="report-btn" href="/api/scans/${id}/report/markdown?token=${TOKEN}" target="_blank">Markdown</a>
-            <a class="report-btn" href="/api/scans/${id}/report/json?token=${TOKEN}" target="_blank">JSON</a>
+            <button class="report-btn" onclick="openReport('${id}','html')">HTML Report</button>
+            <button class="report-btn" onclick="openReport('${id}','markdown')">Markdown</button>
+            <button class="report-btn" onclick="openReport('${id}','json')">JSON</button>
             <button class="btn btn-danger btn-sm" onclick="deleteScan('${id}')">Delete</button>
           </div>
         </div>
@@ -1325,6 +1325,12 @@ async function adminLoginAttempts(el) {
 }
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
+// ── Report opener ──────────────────────────────────────────────────────────────────
+function openReport(scanId, format) {
+  if (!TOKEN) { alert('Not authenticated. Please log in again.'); return; }
+  window.open('/api/scans/' + scanId + '/report/' + format + '?token=' + encodeURIComponent(TOKEN), '_blank');
+}
+
 if (TOKEN && USER) bootApp();
 else document.getElementById('auth-wrapper').style.display = 'flex';
 </script>
