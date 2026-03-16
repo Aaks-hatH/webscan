@@ -7,330 +7,1326 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#080c14;--bg2:#0d1220;--bg3:#111827;--bg4:#1a2236;--border:rgba(99,130,190,0.15);--border2:rgba(99,130,190,0.08);--text:#e2e8f4;--text2:#7b8db0;--text3:#3d4f6e;--accent:#3b82f6;--accent2:#60a5fa;--green:#10b981;--red:#ef4444;--orange:#f59e0b;--purple:#8b5cf6;--crit:#ef4444;--high:#f97316;--med:#eab308;--low:#3b82f6;--info:#6b7280;--r:6px;--r2:10px}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13.5px;line-height:1.5;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 20% -10%,rgba(59,130,246,0.08) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 110%,rgba(139,92,246,0.06) 0%,transparent 60%);pointer-events:none;z-index:0}
-#app{display:flex;min-height:100vh;position:relative;z-index:1}
-nav{width:220px;min-height:100vh;background:rgba(13,18,32,0.97);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;backdrop-filter:blur(20px)}
-.nav-logo{padding:18px 16px 14px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:10px}
-.nav-logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.nav-logo-icon svg{width:17px;height:17px}
-.nl-name{font-size:.95rem;font-weight:700;letter-spacing:-.02em}
-.nl-ver{font-size:.62rem;color:var(--text3);font-family:'JetBrains Mono',monospace}
-.nav-section{padding:14px 14px 5px;font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-weight:600}
-.nav-link{display:flex;align-items:center;gap:9px;padding:8px 14px;cursor:pointer;color:var(--text2);border-left:2px solid transparent;transition:all .15s;font-size:.82rem;font-weight:450;user-select:none}
-.nav-link:hover{background:rgba(59,130,246,.05);color:var(--text)}
-.nav-link.active{color:var(--accent2);border-left-color:var(--accent);background:rgba(59,130,246,.08)}
-.nl-icon{width:15px;height:15px;flex-shrink:0;opacity:.75}
-.nav-link.active .nl-icon{opacity:1}
-.nl-badge{margin-left:auto;font-size:.58rem;font-weight:700;padding:2px 5px;border-radius:3px;background:rgba(139,92,246,.18);color:var(--purple);border:1px solid rgba(139,92,246,.28);letter-spacing:.04em}
-.nav-footer{margin-top:auto;padding:12px 14px;border-top:1px solid var(--border2)}
-.nav-user{display:flex;align-items:center;gap:7px;margin-bottom:8px}
-.nav-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#fff;flex-shrink:0}
-.nav-uname{font-size:.82rem;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-main{margin-left:220px;flex:1;padding:28px 32px;max-width:calc(100% - 220px)}
-#auth-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;position:relative;z-index:1}
-.auth-card{background:rgba(13,18,32,0.92);border:1px solid var(--border);border-radius:16px;padding:2.2rem;width:380px;backdrop-filter:blur(30px);box-shadow:0 0 60px rgba(59,130,246,.06),0 25px 50px rgba(0,0,0,.4);animation:slideUp .35s ease}
-@keyframes slideUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
-.auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem}
-.auth-logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:10px;display:flex;align-items:center;justify-content:center}
-.auth-logo-icon svg{width:20px;height:20px}
-.auth-logo h1{font-size:1.2rem;font-weight:700;letter-spacing:-.02em}
-.auth-logo .sub{font-size:.68rem;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:2px}
-.auth-tabs{display:flex;background:var(--bg3);border-radius:6px;padding:3px;margin-bottom:1.4rem;border:1px solid var(--border2)}
-.auth-tab{flex:1;text-align:center;padding:6px;cursor:pointer;border-radius:4px;font-size:.82rem;color:var(--text2);transition:all .15s;font-weight:500}
-.auth-tab.active{background:var(--bg4);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.3)}
-.fg{margin-bottom:.85rem}
-.fg label{display:block;font-size:.74rem;color:var(--text2);margin-bottom:4px;font-weight:500;letter-spacing:.01em}
-.fg input,.fg select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px 11px;color:var(--text);font-size:.85rem;outline:none;transition:border .15s,box-shadow .15s;font-family:inherit}
-.fg input:focus,.fg select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
-.fg input::placeholder{color:var(--text3)}
-.msg-err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.22);border-radius:var(--r);padding:8px 11px;color:#fca5a5;font-size:.8rem;margin-bottom:.85rem;display:flex;align-items:center;gap:6px}
-.msg-ok{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.22);border-radius:var(--r);padding:8px 11px;color:#6ee7b7;font-size:.8rem;margin-bottom:.85rem}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r);cursor:pointer;font-size:.82rem;font-weight:500;border:none;transition:all .15s;white-space:nowrap;outline:none;font-family:inherit}
-.btn-primary{background:var(--accent);color:#fff;box-shadow:0 1px 6px rgba(59,130,246,.3)}.btn-primary:hover{background:#2563eb;transform:translateY(-1px)}.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none}
-.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}.btn-ghost:hover{border-color:var(--text3);color:var(--text);background:var(--bg3)}
-.btn-danger{background:rgba(239,68,68,.09);color:#fca5a5;border:1px solid rgba(239,68,68,.2)}.btn-danger:hover{background:rgba(239,68,68,.18)}
-.btn-warn{background:rgba(245,158,11,.09);color:#fcd34d;border:1px solid rgba(245,158,11,.2)}.btn-warn:hover{background:rgba(245,158,11,.17)}
-.btn-sm{padding:4px 9px;font-size:.75rem}.btn-full{width:100%;justify-content:center}
-.card{background:rgba(13,18,32,0.55);border:1px solid var(--border);border-radius:var(--r2);padding:18px 20px;backdrop-filter:blur(10px)}
-.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.card-title{font-size:.95rem;font-weight:600}
-.sec-title{font-size:.67rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);margin-bottom:10px;font-weight:600}
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px;margin-bottom:22px}
-.stat{background:rgba(13,18,32,0.65);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px;transition:border .18s,transform .18s;position:relative;overflow:hidden}
-.stat:hover{transform:translateY(-2px);border-color:rgba(99,130,190,0.28)}
-.stat .lbl{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:5px;font-weight:600}
-.stat .val{font-size:1.85rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
-.stat .sub{font-size:.68rem;color:var(--text3);margin-top:3px}
-.page-hdr{margin-bottom:22px}
-.page-title{font-size:1.4rem;font-weight:700;letter-spacing:-.02em;margin-bottom:3px}
-.page-sub{color:var(--text2);font-size:.82rem}
-.scan-list{display:flex;flex-direction:column;gap:6px}
-.scan-item{background:rgba(13,18,32,0.45);border:1px solid var(--border2);border-radius:var(--r2);padding:12px 15px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:all .15s}
-.scan-item:hover{border-color:var(--border);background:rgba(13,18,32,0.75);transform:translateX(2px)}
-.scan-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.58rem;font-weight:700;font-family:'JetBrains Mono',monospace}
-.si-complete{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.18)}
-.si-running{background:rgba(59,130,246,.1);color:var(--accent2);border:1px solid rgba(59,130,246,.18)}
-.si-pending{background:rgba(107,114,128,.08);color:var(--text3);border:1px solid rgba(107,114,128,.15)}
-.si-error{background:rgba(239,68,68,.08);color:var(--red);border:1px solid rgba(239,68,68,.18)}
-.scan-target{font-weight:500;font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.scan-meta{font-size:.71rem;color:var(--text2);margin-top:2px}
-.status-pill{font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.05em;white-space:nowrap}
-.sp-complete{background:rgba(16,185,129,.1);color:var(--green)}
-.sp-running{background:rgba(59,130,246,.1);color:var(--accent2);animation:blink 2s infinite}
-.sp-pending{background:rgba(107,114,128,.09);color:var(--text2)}
-.sp-error{background:rgba(239,68,68,.1);color:var(--red)}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.45}}
-.profile-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
-.prof-btn{padding:12px 8px;border:1px solid var(--border2);border-radius:var(--r2);cursor:pointer;text-align:center;background:rgba(13,18,32,.4);transition:all .15s}
-.prof-btn:hover{border-color:var(--border);background:rgba(13,18,32,.7)}
-.prof-btn.sel{border-color:var(--accent);background:rgba(59,130,246,.07);box-shadow:0 0 0 1px rgba(59,130,246,.15)}
-.prof-btn .pi{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--accent2);margin-bottom:5px}
-.prof-btn .pn{font-size:.78rem;font-weight:600;color:var(--text)}
-.prof-btn .pd{font-size:.66rem;color:var(--text2);margin-top:2px;line-height:1.3}
-.toggles{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:6px}
-.tog{display:flex;align-items:center;gap:7px;padding:7px 10px;background:rgba(13,18,32,.4);border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;font-size:.78rem;transition:border .12s}
-.tog:hover{border-color:var(--border)}
-.tog input{accent-color:var(--accent);cursor:pointer}
-.terminal{background:#04070f;border:1px solid var(--border);border-radius:var(--r2);padding:14px;font-family:'JetBrains Mono',monospace;font-size:.74rem;max-height:210px;overflow-y:auto;color:#4a6080;line-height:1.75}
-.terminal::-webkit-scrollbar{width:4px}.terminal::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-.tl-phase{color:var(--accent2);font-weight:500}.tl-find{color:var(--orange)}.tl-err{color:var(--red)}.tl-ok{color:var(--green)}
-.pb-wrap{background:rgba(255,255,255,.04);border-radius:4px;height:4px;overflow:hidden;margin:8px 0}
-.pb{height:100%;border-radius:4px;transition:width .4s cubic-bezier(.4,0,.2,1);background:linear-gradient(90deg,var(--accent),var(--purple));position:relative;overflow:hidden}
-.pb::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);animation:shimmer 1.6s infinite}
-@keyframes shimmer{to{left:100%}}
-.live-finds{max-height:230px;overflow-y:auto;margin-top:12px}
-.lf-row{display:flex;align-items:center;gap:8px;padding:5px 8px;border-bottom:1px solid var(--border2);font-size:.77rem;animation:fadeIn .22s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
-.sdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.sev-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
-.sev-filter{padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:.73rem;font-weight:600;transition:all .12s}
-.sev-filter:hover{border-color:currentColor;background:rgba(255,255,255,.03)}.sev-filter.active{background:rgba(255,255,255,.05);border-color:currentColor}
-.fc{border:1px solid var(--border2);border-radius:var(--r2);margin-bottom:6px;overflow:hidden;transition:border .15s}
-.fc:hover{border-color:var(--border)}
-.fh{display:flex;align-items:center;gap:9px;padding:11px 14px;cursor:pointer;border-left:3px solid currentColor;transition:background .12s}
-.fh:hover{background:rgba(255,255,255,.015)}
-.fb{padding:14px;border-top:1px solid var(--border2);display:none;background:rgba(4,7,15,.4)}
-.fb.open{display:block;animation:slideDown .18s ease}
-@keyframes slideDown{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-.ftype{font-weight:600;font-size:.84rem;flex:1}
-.sev-badge{display:inline-block;padding:1px 7px;border-radius:3px;font-size:.66rem;font-weight:700;letter-spacing:.05em}
-.meta-tbl{width:100%;font-size:.79rem;margin:8px 0 12px}
-.meta-tbl tr td{padding:3px 0;vertical-align:top}
-.meta-tbl tr td:first-child{color:var(--text2);font-weight:500;width:116px}
-.meta-tbl tr td:last-child{font-family:'JetBrains Mono',monospace;font-size:.73rem;word-break:break-all}
-pre.cb{background:#04070f;border:1px solid var(--border2);border-radius:var(--r);padding:10px 12px;font-size:.73rem;font-family:'JetBrains Mono',monospace;color:#7dd3fc;overflow-x:auto;white-space:pre-wrap;word-break:break-all;margin:5px 0}
-.mit{background:rgba(16,185,129,.04);border-left:3px solid rgba(16,185,129,.35);border-radius:0 var(--r) var(--r) 0;padding:10px 13px;font-size:.79rem;color:#6ee7b7;margin-top:8px;line-height:1.65}
-table.tbl{width:100%;border-collapse:collapse;font-size:.8rem}
-table.tbl th{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text3);font-weight:600;font-size:.66rem;text-transform:uppercase;letter-spacing:.07em}
-table.tbl td{padding:9px 10px;border-bottom:1px solid var(--border2);vertical-align:middle}
-table.tbl tbody tr:hover td{background:rgba(255,255,255,.015)}
-.admin-tabs{display:flex;margin-bottom:20px;border-bottom:1px solid var(--border2)}
-.atab{padding:9px 16px;cursor:pointer;font-size:.82rem;color:var(--text2);border-bottom:2px solid transparent;transition:all .12s;margin-bottom:-1px;font-weight:500}
-.atab:hover{color:var(--text)}.atab.active{color:var(--accent2);border-bottom-color:var(--accent)}
-.tag{display:inline-block;padding:1px 6px;border-radius:3px;font-size:.67rem;background:var(--bg4);color:var(--text2);border:1px solid var(--border2);font-family:'JetBrains Mono',monospace}
-.empty{text-align:center;padding:44px 20px;color:var(--text3);font-size:.84rem}
-.spinner{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .55s linear infinite;flex-shrink:0}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading{display:flex;align-items:center;gap:10px;color:var(--text2);font-size:.84rem;padding:36px 0}
-.divider{height:1px;background:var(--border2);margin:16px 0}
-.flex{display:flex}.gap-2{gap:8px}.items-center{align-items:center}.flex-1{flex:1}
-.mt1{margin-top:4px}.mt2{margin-top:8px}.mt3{margin-top:14px}.mt4{margin-top:20px}
-.text-sm{font-size:.8rem}.text-xs{font-size:.7rem}.text-muted{color:var(--text2)}
-code{font-family:'JetBrains Mono',monospace;background:var(--bg4);padding:1px 5px;border-radius:3px;font-size:.76rem}
-.pagination{display:flex;align-items:center;gap:8px;margin-top:14px;justify-content:flex-end;font-size:.79rem}
-.search-bar{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:6px 11px;color:var(--text);font-size:.82rem;outline:none;transition:border .15s;font-family:inherit;width:240px}
-.search-bar:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.08)}
-.report-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:var(--r);font-size:.76rem;font-weight:500;border:1px solid var(--border);color:var(--text2);background:transparent;cursor:pointer;transition:all .12s;text-decoration:none;font-family:inherit}
-.report-btn:hover{border-color:var(--accent);color:var(--accent2);background:rgba(59,130,246,.05)}
-.sev-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:7px}
-.sev-bar-label{width:72px;color:var(--text2);font-weight:500;font-size:.71rem}
-.sev-bar-track{flex:1;height:5px;background:rgba(255,255,255,.04);border-radius:3px;overflow:hidden}
-.sev-bar-fill{height:100%;border-radius:3px;transition:width .65s cubic-bezier(.4,0,.2,1)}
-.sev-bar-count{width:28px;text-align:right;color:var(--text2);font-variant-numeric:tabular-nums;font-size:.78rem}
+:root {
+  --bg:      #080c14;
+  --bg2:     #0d1220;
+  --bg3:     #111827;
+  --bg4:     #1a2236;
+  --border:  rgba(99,130,190,0.18);
+  --border2: rgba(99,130,190,0.08);
+  --text:    #e2e8f4;
+  --text2:   #7b8db0;
+  --text3:   #3d4f6e;
+  --accent:  #3b82f6;
+  --accent2: #60a5fa;
+  --green:   #10b981;
+  --red:     #ef4444;
+  --orange:  #f59e0b;
+  --purple:  #8b5cf6;
+  --crit:    #ef4444;
+  --high:    #f97316;
+  --med:     #eab308;
+  --low:     #3b82f6;
+  --info:    #6b7280;
+  --r:       6px;
+  --r2:      10px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 13.5px;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(59,130,246,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(139,92,246,0.05) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+a { color: var(--accent2); text-decoration: none; }
+
+/* ── Layout ── */
+#app { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+
+nav {
+  width: 220px;
+  min-height: 100vh;
+  background: rgba(8,12,20,0.97);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  backdrop-filter: blur(20px);
+}
+.nav-logo {
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid var(--border2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav-logo-icon {
+  width: 30px; height: 30px;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.nav-logo-icon svg { width: 16px; height: 16px; }
+.nav-logo-name { font-size: .93rem; font-weight: 700; letter-spacing: -.02em; }
+.nav-logo-ver {
+  font-size: .6rem; color: var(--text3);
+  font-family: 'JetBrains Mono', monospace;
+  margin-left: auto;
+  background: var(--bg3);
+  padding: 2px 6px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+}
+.nav-section {
+  padding: 14px 14px 5px;
+  font-size: .6rem;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--text3);
+  font-weight: 600;
+}
+.nav-links { flex: 1; padding: 4px 0; }
+.nav-link {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 14px;
+  cursor: pointer;
+  color: var(--text2);
+  border-left: 2px solid transparent;
+  transition: all .14s;
+  font-size: .82rem;
+  font-weight: 450;
+  user-select: none;
+}
+.nav-link:hover { background: rgba(59,130,246,.05); color: var(--text); }
+.nav-link.active {
+  color: var(--accent2);
+  border-left-color: var(--accent);
+  background: rgba(59,130,246,.07);
+}
+.nav-link .nl-icon { width: 15px; height: 15px; flex-shrink: 0; opacity: .7; }
+.nav-link.active .nl-icon { opacity: 1; }
+.nl-badge {
+  margin-left: auto;
+  font-size: .58rem; font-weight: 700;
+  padding: 1px 5px; border-radius: 3px;
+  background: rgba(139,92,246,.15);
+  color: var(--purple);
+  border: 1px solid rgba(139,92,246,.25);
+  letter-spacing: .04em;
+}
+.nav-footer {
+  margin-top: auto;
+  padding: 11px 14px;
+  border-top: 1px solid var(--border2);
+}
+.nav-user { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+.nav-avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-size: .72rem; font-weight: 700; color: #fff;
+  flex-shrink: 0;
+}
+.nav-username { font-size: .82rem; font-weight: 500; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav-crown { color: var(--orange); font-size: .75rem; }
+
+main { margin-left: 220px; flex: 1; padding: 26px 30px; max-width: calc(100% - 220px); }
+
+/* ── Auth ── */
+#auth-wrapper {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh;
+  position: relative; z-index: 1;
+}
+.auth-card {
+  background: rgba(13,18,32,0.92);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 2.1rem;
+  width: 375px;
+  backdrop-filter: blur(30px);
+  box-shadow: 0 0 60px rgba(59,130,246,.06), 0 24px 48px rgba(0,0,0,.4);
+  animation: slideUp .35s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+.auth-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 1.4rem; }
+.auth-logo-icon {
+  width: 38px; height: 38px;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+}
+.auth-logo-icon svg { width: 19px; height: 19px; }
+.auth-logo h1 { font-size: 1.15rem; font-weight: 700; letter-spacing: -.02em; }
+.auth-logo .auth-sub { font-size: .68rem; color: var(--text3); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+.auth-tabs {
+  display: flex;
+  background: var(--bg3);
+  border-radius: 6px;
+  padding: 3px;
+  margin-bottom: 1.3rem;
+  border: 1px solid var(--border2);
+}
+.auth-tab { flex: 1; text-align: center; padding: 6px; cursor: pointer; border-radius: 4px; font-size: .82rem; color: var(--text2); transition: all .14s; font-weight: 500; }
+.auth-tab.active { background: var(--bg4); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+
+/* ── Forms ── */
+.fg { margin-bottom: .85rem; }
+.fg label { display: block; font-size: .74rem; color: var(--text2); margin-bottom: 4px; font-weight: 500; }
+.fg input, .fg select, .fg textarea {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 8px 11px;
+  color: var(--text);
+  font-size: .85rem;
+  outline: none;
+  transition: border .14s, box-shadow .14s;
+  font-family: inherit;
+}
+.fg input:focus, .fg select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+}
+.fg input::placeholder { color: var(--text3); }
+.fg select { cursor: pointer; }
+
+/* ── Messages ── */
+.msg-err {
+  background: rgba(239,68,68,.08);
+  border: 1px solid rgba(239,68,68,.22);
+  border-radius: var(--r);
+  padding: 8px 11px;
+  color: #fca5a5;
+  font-size: .8rem;
+  margin-bottom: .85rem;
+}
+.msg-ok {
+  background: rgba(16,185,129,.08);
+  border: 1px solid rgba(16,185,129,.22);
+  border-radius: var(--r);
+  padding: 8px 11px;
+  color: #6ee7b7;
+  font-size: .8rem;
+  margin-bottom: .85rem;
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--r);
+  cursor: pointer;
+  font-size: .82rem; font-weight: 500;
+  border: none;
+  transition: all .14s;
+  white-space: nowrap;
+  outline: none;
+  font-family: inherit;
+}
+.btn-primary {
+  background: var(--accent); color: #fff;
+  box-shadow: 0 1px 6px rgba(59,130,246,.3);
+}
+.btn-primary:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 3px 10px rgba(59,130,246,.4); }
+.btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+.btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+.btn-ghost:hover { border-color: rgba(99,130,190,.4); color: var(--text); background: var(--bg3); }
+.btn-danger { background: rgba(239,68,68,.09); color: #fca5a5; border: 1px solid rgba(239,68,68,.2); }
+.btn-danger:hover { background: rgba(239,68,68,.17); }
+.btn-warn { background: rgba(245,158,11,.09); color: #fcd34d; border: 1px solid rgba(245,158,11,.2); }
+.btn-warn:hover { background: rgba(245,158,11,.17); }
+.btn-sm { padding: 4px 9px; font-size: .75rem; }
+.btn-full { width: 100%; justify-content: center; }
+
+/* ── Cards ── */
+.card {
+  background: rgba(13,18,32,0.55);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 18px 20px;
+  backdrop-filter: blur(8px);
+}
+.card-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.card-title { font-size: .95rem; font-weight: 600; }
+.sec-title {
+  font-size: .66rem; text-transform: uppercase; letter-spacing: .09em;
+  color: var(--text3); margin-bottom: 10px; font-weight: 600;
+}
+
+/* ── Stats ── */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 10px; margin-bottom: 20px; }
+.stat {
+  background: rgba(13,18,32,0.6);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 14px 16px;
+  transition: border .18s, transform .18s;
+  position: relative; overflow: hidden;
+}
+.stat:hover { transform: translateY(-2px); border-color: rgba(99,130,190,.3); }
+.stat .lbl { font-size: .65rem; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); margin-bottom: 5px; font-weight: 600; }
+.stat .val { font-size: 1.85rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.stat .sub { font-size: .68rem; color: var(--text3); margin-top: 3px; }
+
+/* ── Page headers ── */
+.page-hdr { margin-bottom: 20px; }
+.page-title { font-size: 1.38rem; font-weight: 700; letter-spacing: -.02em; margin-bottom: 3px; }
+.page-sub { color: var(--text2); font-size: .82rem; }
+
+/* ── Scan list items ── */
+.scan-list { display: flex; flex-direction: column; gap: 6px; }
+.scan-item {
+  background: rgba(13,18,32,0.45);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 11px 14px;
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer;
+  transition: all .14s;
+}
+.scan-item:hover { border-color: var(--border); background: rgba(13,18,32,.7); transform: translateX(2px); }
+.scan-item-icon {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: .58rem; font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+.si-complete { background: rgba(16,185,129,.1); color: var(--green); border: 1px solid rgba(16,185,129,.18); }
+.si-running  { background: rgba(59,130,246,.1); color: var(--accent2); border: 1px solid rgba(59,130,246,.18); }
+.si-pending  { background: rgba(107,114,128,.08); color: var(--text3); border: 1px solid rgba(107,114,128,.14); }
+.si-error    { background: rgba(239,68,68,.08); color: var(--red); border: 1px solid rgba(239,68,68,.16); }
+.scan-target { font-weight: 500; font-size: .87rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.scan-meta { font-size: .71rem; color: var(--text2); margin-top: 2px; }
+
+/* ── Status pills ── */
+.status-pill { font-size: .65rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; letter-spacing: .05em; white-space: nowrap; }
+.sp-complete { background: rgba(16,185,129,.1); color: var(--green); }
+.sp-running  { background: rgba(59,130,246,.1); color: var(--accent2); animation: blink 2s infinite; }
+.sp-pending  { background: rgba(107,114,128,.09); color: var(--text2); }
+.sp-error    { background: rgba(239,68,68,.1); color: var(--red); }
+@keyframes blink { 0%,100%{ opacity:1 } 50%{ opacity:.45 } }
+
+/* ── Profile picker ── */
+.profile-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+.prof-btn {
+  padding: 11px 8px;
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  cursor: pointer; text-align: center;
+  background: rgba(13,18,32,.4);
+  transition: all .14s;
+}
+.prof-btn:hover { border-color: var(--border); background: rgba(13,18,32,.7); }
+.prof-btn.sel {
+  border-color: var(--accent);
+  background: rgba(59,130,246,.07);
+  box-shadow: 0 0 0 1px rgba(59,130,246,.15);
+}
+.prof-btn .pi { font-family: 'JetBrains Mono', monospace; font-size: .72rem; color: var(--accent2); margin-bottom: 5px; }
+.prof-btn .pn { font-size: .78rem; font-weight: 600; }
+.prof-btn .pd { font-size: .66rem; color: var(--text2); margin-top: 2px; line-height: 1.3; }
+
+/* ── Detection toggles ── */
+.toggles { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 6px; }
+.tog {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 10px;
+  background: rgba(13,18,32,.4);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  cursor: pointer; font-size: .78rem;
+  transition: border .12s;
+}
+.tog:hover { border-color: var(--border); }
+.tog input { accent-color: var(--accent); cursor: pointer; }
+
+/* ── Terminal / live scan ── */
+.terminal {
+  background: #04070f;
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 13px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .74rem;
+  max-height: 210px;
+  overflow-y: auto;
+  color: #4a6080;
+  line-height: 1.75;
+}
+.terminal::-webkit-scrollbar { width: 4px; }
+.terminal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.tl-phase { color: var(--accent2); font-weight: 500; }
+.tl-find  { color: var(--orange); }
+.tl-err   { color: var(--red); }
+.tl-ok    { color: var(--green); }
+
+.pb-wrap { background: rgba(255,255,255,.04); border-radius: 4px; height: 4px; overflow: hidden; margin: 8px 0; }
+.pb {
+  height: 100%; border-radius: 4px;
+  transition: width .4s cubic-bezier(.4,0,.2,1);
+  background: linear-gradient(90deg, var(--accent), var(--purple));
+  position: relative; overflow: hidden;
+}
+.pb::after {
+  content: '';
+  position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.3), transparent);
+  animation: shimmer 1.6s infinite;
+}
+@keyframes shimmer { to { left: 100%; } }
+
+.live-finds { max-height: 220px; overflow-y: auto; margin-top: 11px; }
+.lf-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 7px;
+  border-bottom: 1px solid var(--border2);
+  font-size: .76rem;
+  animation: fadeSlide .22s ease;
+}
+@keyframes fadeSlide { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
+
+/* ── Findings ── */
+.sev-filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+.sev-filter {
+  padding: 3px 10px; border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  font-size: .73rem; font-weight: 600;
+  transition: all .12s;
+}
+.sev-filter:hover { border-color: currentColor; background: rgba(255,255,255,.03); }
+.sev-filter.active { background: rgba(255,255,255,.05); border-color: currentColor; }
+.fc { border: 1px solid var(--border2); border-radius: var(--r2); margin-bottom: 6px; overflow: hidden; transition: border .14s; }
+.fc:hover { border-color: var(--border); }
+.fh {
+  display: flex; align-items: center; gap: 9px;
+  padding: 11px 14px;
+  cursor: pointer;
+  border-left: 3px solid currentColor;
+  transition: background .12s;
+}
+.fh:hover { background: rgba(255,255,255,.015); }
+.fb {
+  padding: 14px;
+  border-top: 1px solid var(--border2);
+  display: none;
+  background: rgba(4,7,15,.4);
+}
+.fb.open { display: block; animation: slideDown .18s ease; }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.sdot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.ftype { font-weight: 600; font-size: .84rem; flex: 1; }
+.sev-badge { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: .66rem; font-weight: 700; letter-spacing: .05em; }
+.meta-table { width: 100%; font-size: .79rem; margin: 8px 0 12px; }
+.meta-table tr td { padding: 3px 0; vertical-align: top; }
+.meta-table tr td:first-child { color: var(--text2); font-weight: 500; width: 116px; padding-right: 8px; }
+.meta-table tr td:last-child { font-family: 'JetBrains Mono', monospace; font-size: .73rem; word-break: break-all; }
+pre.code-block {
+  background: #04070f;
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 10px 12px;
+  font-size: .73rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: #7dd3fc;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin: 5px 0;
+}
+.mitigation {
+  background: rgba(16,185,129,.05);
+  border-left: 3px solid rgba(16,185,129,.35);
+  border-radius: 0 var(--r) var(--r) 0;
+  padding: 10px 13px;
+  font-size: .79rem;
+  color: #6ee7b7;
+  margin-top: 8px;
+  line-height: 1.65;
+}
+
+/* ── Tables ── */
+table.tbl { width: 100%; border-collapse: collapse; font-size: .8rem; }
+table.tbl th {
+  text-align: left; padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text3); font-weight: 600;
+  font-size: .65rem; text-transform: uppercase; letter-spacing: .07em;
+}
+table.tbl td { padding: 9px 10px; border-bottom: 1px solid var(--border2); vertical-align: middle; }
+table.tbl tbody tr:hover td { background: rgba(255,255,255,.015); }
+
+/* ── Admin tabs ── */
+.admin-tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid var(--border2); }
+.atab {
+  padding: 9px 16px; cursor: pointer;
+  font-size: .82rem; color: var(--text2);
+  border-bottom: 2px solid transparent;
+  transition: all .12s; margin-bottom: -1px;
+  font-weight: 500;
+}
+.atab:hover { color: var(--text); }
+.atab.active { color: var(--accent2); border-bottom-color: var(--accent); }
+
+/* ── Diff sections ── */
+.diff-new-hdr { font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; color: var(--crit); margin-bottom: 8px; font-weight: 600; }
+.diff-res-hdr { font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; color: var(--green); margin-bottom: 8px; font-weight: 600; }
+
+/* ── Report buttons ── */
+.report-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 11px; border-radius: var(--r);
+  font-size: .75rem; font-weight: 500;
+  border: 1px solid var(--border); color: var(--text2);
+  background: transparent; cursor: pointer;
+  transition: all .12s; text-decoration: none; font-family: inherit;
+}
+.report-btn:hover { border-color: var(--accent); color: var(--accent2); background: rgba(59,130,246,.05); }
+
+/* ── Severity bars ── */
+.sev-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+.sev-bar-label { width: 72px; color: var(--text2); font-weight: 500; font-size: .7rem; }
+.sev-bar-track { flex: 1; height: 5px; background: rgba(255,255,255,.04); border-radius: 3px; overflow: hidden; }
+.sev-bar-fill { height: 100%; border-radius: 3px; transition: width .65s cubic-bezier(.4,0,.2,1); }
+.sev-bar-count { width: 28px; text-align: right; color: var(--text2); font-size: .78rem; font-variant-numeric: tabular-nums; }
+
+/* ── Misc ── */
+.tag { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: .67rem; background: var(--bg4); color: var(--text2); border: 1px solid var(--border2); font-family: 'JetBrains Mono', monospace; }
+.empty { text-align: center; padding: 44px 20px; color: var(--text3); font-size: .84rem; }
+.spinner { width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .55s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading { display: flex; align-items: center; gap: 10px; color: var(--text2); font-size: .84rem; padding: 36px 0; }
+.divider { height: 1px; background: var(--border2); margin: 16px 0; }
+.flex { display: flex; } .gap-2 { gap: 8px; } .items-center { align-items: center; } .flex-1 { flex: 1; }
+.mt1{margin-top:4px} .mt2{margin-top:8px} .mt3{margin-top:14px} .mt4{margin-top:20px}
+.text-sm{font-size:.8rem} .text-xs{font-size:.7rem} .text-muted{color:var(--text2)}
+code { font-family: 'JetBrains Mono', monospace; background: var(--bg4); padding: 1px 5px; border-radius: 3px; font-size: .76rem; }
+.pagination { display: flex; align-items: center; gap: 8px; margin-top: 14px; justify-content: flex-end; font-size: .79rem; }
+.search-bar { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r); padding: 6px 11px; color: var(--text); font-size: .82rem; outline: none; transition: border .14s; font-family: inherit; width: 240px; }
+.search-bar:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,.08); }
 </style>
 </head>
 <body>
-<div id="auth-wrap">
+
+<!-- ── AUTH PAGE ────────────────────────────────────────────────────── -->
+<div id="auth-wrapper">
   <div class="auth-card">
     <div class="auth-logo">
       <div class="auth-logo-icon">
-        <svg viewBox="0 0 20 20" fill="none" stroke="white" stroke-width="1.5"><path d="M10 2L17 6V10C17 14 13.5 17.5 10 19C6.5 17.5 3 14 3 10V6L10 2Z" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 10l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg viewBox="0 0 20 20" fill="none" stroke="white" stroke-width="1.5">
+          <path d="M10 2L17 6V10C17 14 13.5 17.5 10 19C6.5 17.5 3 14 3 10V6L10 2Z"
+                stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M7 10l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </div>
-      <div><h1>WebScan</h1><div class="sub">security-scanner v2.1</div></div>
+      <div>
+        <h1>WebScan</h1>
+        <div class="auth-sub">security-scanner v2.1</div>
+      </div>
     </div>
     <div class="auth-tabs">
       <div class="auth-tab active" onclick="showTab('login')">Sign in</div>
       <div class="auth-tab" onclick="showTab('register')">Register</div>
     </div>
-    <div id="auth-err" style="display:none"></div>
+    <div id="auth-err" class="msg-err" style="display:none"></div>
+
+    <!-- Login form -->
     <div id="tab-login">
-      <div class="fg"><label>Username</label><input id="lu" type="text" placeholder="your-username" autocomplete="username"></div>
-      <div class="fg"><label>Password</label><input id="lp" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="current-password"></div>
+      <div class="fg">
+        <label>Username</label>
+        <input id="login-user" type="text" placeholder="your-username" autocomplete="username">
+      </div>
+      <div class="fg">
+        <label>Password</label>
+        <input id="login-pass" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="current-password">
+      </div>
       <button class="btn btn-primary btn-full" onclick="doLogin()" id="login-btn">Sign in</button>
     </div>
+
+    <!-- Register form -->
     <div id="tab-register" style="display:none">
-      <div class="fg"><label>Username</label><input id="ru" type="text" placeholder="username"></div>
-      <div class="fg"><label>Email</label><input id="re" type="email" placeholder="you@example.com"></div>
-      <div class="fg"><label>Password</label><input id="rp" type="password" placeholder="min 8 characters"></div>
+      <div class="fg">
+        <label>Username</label>
+        <input id="reg-user" type="text" placeholder="username" autocomplete="username">
+      </div>
+      <div class="fg">
+        <label>Email</label>
+        <input id="reg-email" type="email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="fg">
+        <label>Password <span class="text-muted">(min 8 chars)</span></label>
+        <input id="reg-pass" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="new-password">
+      </div>
       <button class="btn btn-primary btn-full" onclick="doRegister()">Create account</button>
     </div>
-    <p style="text-align:center;margin-top:1rem;font-size:.69rem;color:var(--text3)">Authorized testing environments only.</p>
+
+    <p style="text-align:center;margin-top:1rem;font-size:.69rem;color:var(--text3)">
+      Authorized testing environments only.
+    </p>
   </div>
 </div>
+
+<!-- ── APP SHELL ─────────────────────────────────────────────────────── -->
 <div id="app" style="display:none">
   <nav>
     <div class="nav-logo">
-      <div class="nav-logo-icon"><svg viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.4"><path d="M8 1.5L13.5 4.5V8C13.5 11.5 11 14.5 8 15.5C5 14.5 2.5 11.5 2.5 8V4.5L8 1.5Z" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 8l2 2 3-3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      <div><div class="nl-name">WebScan</div><div class="nl-ver">v2.1.0</div></div>
+      <div class="nav-logo-icon">
+        <svg viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.4">
+          <path d="M8 1.5L13.5 4.5V8C13.5 11.5 11 14.5 8 15.5C5 14.5 2.5 11.5 2.5 8V4.5L8 1.5Z"
+                stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5.5 8l2 2 3-3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="nav-logo-name">WebScan</div>
+      </div>
+      <span class="nav-logo-ver">v2.1</span>
     </div>
-    <div>
+
+    <div class="nav-links">
       <div class="nav-section">Scanner</div>
-      <div class="nav-link" data-page="dashboard" onclick="go('dashboard')"><svg class="nl-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h5v5H2zm0 7h5v5H2zm7-7h5v5H9zm0 7h5v5H9z"/></svg>Dashboard</div>
-      <div class="nav-link" data-page="new-scan" onclick="go('new-scan')"><svg class="nl-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a6 6 0 100 12A6 6 0 008 2zm1 3v2h2a1 1 0 110 2H9v2a1 1 0 11-2 0V9H5a1 1 0 110-2h2V5a1 1 0 112 0z"/></svg>New Scan</div>
-      <div class="nav-link" data-page="scans" onclick="go('scans')"><svg class="nl-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 4h12v1.5H2zm0 3h12v1.5H2zm0 3h8v1.5H2z"/></svg>Scan History</div>
-      <div class="nav-link" data-page="diff" onclick="go('diff')"><svg class="nl-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2v12M12 2v12M2 6h4M10 6h4M2 10h4M10 10h4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>Report Diff</div>
+
+      <div class="nav-link" data-page="dashboard" onclick="navigate('dashboard')">
+        <svg class="nl-icon" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M2 2h5v5H2V2zm0 7h5v5H2V9zm7-7h5v5H9V2zm0 7h5v5H9V9z"/>
+        </svg>
+        Dashboard
+      </div>
+
+      <div class="nav-link" data-page="new-scan" onclick="navigate('new-scan')">
+        <svg class="nl-icon" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 2a6 6 0 100 12A6 6 0 008 2zm1 3v2h2a1 1 0 110 2H9v2a1 1 0 11-2 0V9H5a1 1 0 110-2h2V5a1 1 0 112 0z"/>
+        </svg>
+        New Scan
+      </div>
+
+      <div class="nav-link" data-page="scans" onclick="navigate('scans')">
+        <svg class="nl-icon" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M1 3a1 1 0 011-1h12a1 1 0 010 2H2a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 010 2H2a1 1 0 01-1-1zm0 4a1 1 0 011-1h8a1 1 0 010 2H2a1 1 0 01-1-1z"/>
+        </svg>
+        Scan History
+      </div>
+
+      <div class="nav-link" data-page="diff" onclick="navigate('diff')">
+        <svg class="nl-icon" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M3.72 3.72a.75.75 0 011.06 1.06L2.56 7h10.88l-2.22-2.22a.75.75 0 011.06-1.06l3.5 3.5a.75.75 0 010 1.06l-3.5 3.5a.75.75 0 11-1.06-1.06l2.22-2.22H2.56l2.22 2.22a.75.75 0 11-1.06 1.06l-3.5-3.5a.75.75 0 010-1.06l3.5-3.5z"/>
+        </svg>
+        Report Diff
+      </div>
+
+      <!-- Admin section — only shown for admin users -->
+      <div id="admin-nav" style="display:none">
+        <div class="nav-section">Administration</div>
+        <div class="nav-link" data-page="admin" onclick="navigate('admin')">
+          <svg class="nl-icon" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 1a3 3 0 110 6 3 3 0 010-6zm0 7c3.3 0 6 1.3 6 3v1H2v-1c0-1.7 2.7-3 6-3z"/>
+          </svg>
+          Admin Panel
+          <span class="nl-badge">ADMIN</span>
+        </div>
+      </div>
     </div>
-    <div id="admin-nav" style="display:none">
-      <div class="nav-section">Administration</div>
-      <div class="nav-link" data-page="admin" onclick="go('admin')"><svg class="nl-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a3 3 0 110 6 3 3 0 010-6zm0 7c3.3 0 6 1.3 6 3v1H2v-1c0-1.7 2.7-3 6-3z"/></svg>Admin Panel<span class="nl-badge">ADMIN</span></div>
-    </div>
+
     <div class="nav-footer">
-      <div class="nav-user"><div class="nav-avatar" id="nav-avatar">?</div><div class="nav-uname" id="nav-uname"></div><div id="nav-crown" style="display:none;color:var(--orange);font-size:.8rem">&#9733;</div></div>
-      <div class="flex gap-2"><button class="btn btn-ghost btn-sm" onclick="go('settings')">Settings</button><button class="btn btn-ghost btn-sm" onclick="doLogout()">Sign out</button></div>
+      <div class="nav-user">
+        <div class="nav-avatar" id="nav-avatar">?</div>
+        <div class="nav-username" id="nav-username"></div>
+        <div class="nav-crown" id="nav-crown" style="display:none">&#9733;</div>
+      </div>
+      <div class="flex gap-2">
+        <button class="btn btn-ghost btn-sm" onclick="navigate('settings')">Settings</button>
+        <button class="btn btn-ghost btn-sm" onclick="doLogout()">Sign out</button>
+      </div>
     </div>
   </nav>
-  <main id="page"></main>
+
+  <main id="page-content"></main>
 </div>
+
 <script>
-let TOKEN=localStorage.getItem('ws_tok')||'',USER=JSON.parse(localStorage.getItem('ws_usr')||'null');
-const SC={CRITICAL:'#ef4444',HIGH:'#f97316',MEDIUM:'#eab308',LOW:'#3b82f6',INFO:'#6b7280'};
-const SBG={CRITICAL:'rgba(239,68,68,.12)',HIGH:'rgba(249,115,22,.12)',MEDIUM:'rgba(234,179,8,.12)',LOW:'rgba(59,130,246,.12)',INFO:'rgba(107,114,128,.1)'};
-async function api(method,path,body){const r=await fetch('/api'+path,{method,headers:{'Content-Type':'application/json',...(TOKEN?{Authorization:'Bearer '+TOKEN}:{})},body:body!==undefined?JSON.stringify(body):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.detail||r.statusText);return d;}
-function showAuthErr(m){const e=document.getElementById('auth-err');e.className='msg-err';e.textContent=m;e.style.display='flex';}
-function showTab(t){document.getElementById('auth-err').style.display='none';document.getElementById('tab-login').style.display=t==='login'?'':'none';document.getElementById('tab-register').style.display=t==='register'?'':'none';document.querySelectorAll('.auth-tab').forEach((a,i)=>a.classList.toggle('active',(i===0)===(t==='login')));}
-async function doLogin(){const btn=document.getElementById('login-btn');btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Signing in';try{const d=await api('POST','/auth/login',{username:document.getElementById('lu').value.trim(),password:document.getElementById('lp').value});setSession(d);}catch(e){showAuthErr(e.message);}finally{btn.disabled=false;btn.textContent='Sign in';}}
-async function doRegister(){try{const d=await api('POST','/auth/register',{username:document.getElementById('ru').value.trim(),email:document.getElementById('re').value.trim(),password:document.getElementById('rp').value});setSession(d);}catch(e){showAuthErr(e.message);}}
-document.addEventListener('keydown',e=>{if(e.key!=='Enter')return;if(!document.getElementById('auth-wrap')||document.getElementById('auth-wrap').style.display==='none')return;if(document.getElementById('tab-register').style.display==='none')doLogin();else doRegister();});
-function setSession(d){TOKEN=d.access_token;USER=d.user;localStorage.setItem('ws_tok',TOKEN);localStorage.setItem('ws_usr',JSON.stringify(USER));bootApp();}
-async function doLogout(){try{await api('POST','/auth/logout');}catch(_){}TOKEN='';USER=null;localStorage.removeItem('ws_tok');localStorage.removeItem('ws_usr');document.getElementById('app').style.display='none';document.getElementById('auth-wrap').style.display='flex';showTab('login');}
-function bootApp(){document.getElementById('auth-wrap').style.display='none';document.getElementById('app').style.display='flex';const u=USER?.username||'';document.getElementById('nav-uname').textContent=u;document.getElementById('nav-avatar').textContent=u[0]?.toUpperCase()||'?';if(USER?.is_admin){document.getElementById('admin-nav').style.display='';document.getElementById('nav-crown').style.display='';}go('dashboard');}
-function go(page,data=null){document.querySelectorAll('.nav-link').forEach(l=>l.classList.toggle('active',l.dataset.page===page));const el=document.getElementById('page');el.innerHTML='';const pages={dashboard,scans:scanHistory,'new-scan':newScan,diff:reportDiff,settings:settingsPage,admin:adminPage,'scan-live':scanLivePage,'scan-detail':scanDetailPage};if(pages[page])pages[page](el,data);}
-function sevBadge(s){return '<span class="sev-badge" style="background:'+SBG[s]+';color:'+SC[s]+'">'+s+'</span>';}
-function statusPill(s){return '<span class="status-pill sp-'+s+'">'+s.toUpperCase()+'</span>';}
-function rel(iso){if(!iso)return '';const d=Math.round((Date.now()-new Date(iso))/1000);if(d<60)return d+'s ago';if(d<3600)return Math.floor(d/60)+'m ago';if(d<86400)return Math.floor(d/3600)+'h ago';return new Date(iso).toLocaleDateString();}
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function scanIcon(st){const cls='scan-icon si-'+st;const lbl={complete:'OK',running:'RUN',pending:'...',error:'ERR'};return '<div class="'+cls+'">'+( lbl[st]||'?')+'</div>';}
-function scanRow(s){return '<div class="scan-item" onclick="go(\'scan-detail\',{id:\''+s.id+'\'})">'+scanIcon(s.status)+'<div style="flex:1;min-width:0"><div class="scan-target">'+esc(s.target)+'</div><div class="scan-meta mt1">'+rel(s.created_at)+' &middot; '+s.profile+(s.username?' &middot; '+s.username:'')+' &middot; '+(s.summary?.pages_crawled||0)+' pages</div></div><div class="flex gap-2 items-center" style="flex-shrink:0">'+(s.status==='complete'?'<span style="color:'+SC.CRITICAL+';font-size:.7rem;font-weight:700">'+(s.summary?.critical||0)+'C</span><span style="color:'+SC.HIGH+';font-size:.7rem;font-weight:700">'+(s.summary?.high||0)+'H</span>':'')+statusPill(s.status)+'</div></div>';}
-async function dashboard(el){
-  el.innerHTML='<div class="page-hdr" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px"><div><div class="page-title">Dashboard</div><div class="page-sub">Security scan overview</div></div><button class="btn btn-primary btn-sm" onclick="go(\'new-scan\')">New Scan</button></div><div class="loading"><div class="spinner"></div> Loading</div>';
-  try{
-    const scans=await api('GET','/scans?limit=100');
-    const done=scans.filter(s=>s.status==='complete');
-    const tf=done.reduce((a,s)=>a+(s.summary?.total||0),0);
-    const bySev={CRITICAL:done.reduce((a,s)=>a+(s.summary?.critical||0),0),HIGH:done.reduce((a,s)=>a+(s.summary?.high||0),0),MEDIUM:done.reduce((a,s)=>a+(s.summary?.medium||0),0),LOW:done.reduce((a,s)=>a+(s.summary?.low||0),0),INFO:done.reduce((a,s)=>a+(s.summary?.info||0),0)};
-    const maxSev=Math.max(...Object.values(bySev),1);
-    el.innerHTML='<div class="page-hdr" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px"><div><div class="page-title">Dashboard</div><div class="page-sub">Security scan overview</div></div><button class="btn btn-primary btn-sm" onclick="go(\'new-scan\')">New Scan</button></div><div class="stats-grid"><div class="stat"><div class="lbl">Total Scans</div><div class="val">'+scans.length+'</div><div class="sub">'+done.length+' completed</div></div><div class="stat"><div class="lbl">Total Findings</div><div class="val">'+tf+'</div></div><div class="stat" style="border-left:3px solid '+SC.CRITICAL+'"><div class="lbl">Critical</div><div class="val" style="color:'+SC.CRITICAL+'">'+bySev.CRITICAL+'</div></div><div class="stat" style="border-left:3px solid '+SC.HIGH+'"><div class="lbl">High</div><div class="val" style="color:'+SC.HIGH+'">'+bySev.HIGH+'</div></div><div class="stat"><div class="lbl">Running</div><div class="val" style="color:var(--accent2)">'+scans.filter(s=>s.status==='running').length+'</div></div></div><div style="display:grid;grid-template-columns:1fr 280px;gap:12px"><div class="card"><div class="card-hdr"><div class="card-title">Recent Scans</div></div><div class="scan-list">'+(scans.slice(0,6).map(scanRow).join('')||'<div class="empty">No scans yet.</div>')+'</div>'+(scans.length>6?'<div style="text-align:center;margin-top:10px"><button class="btn btn-ghost btn-sm" onclick="go(\'scans\')">View all '+scans.length+'</button></div>':'')+'</div><div class="card"><div class="card-hdr"><div class="card-title">Breakdown</div></div>'+(tf===0?'<div class="empty" style="padding:20px 0"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="opacity:.25;display:block;margin:0 auto 8px"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>No findings yet</div>':Object.entries(bySev).filter(([,v])=>v>0).map(([s,v])=>'<div class="sev-bar-row"><div class="sev-bar-label" style="color:'+SC[s]+'">'+s+'</div><div class="sev-bar-track"><div class="sev-bar-fill" style="width:'+Math.round(v/maxSev*100)+'%;background:'+SC[s]+'"></div></div><div class="sev-bar-count">'+v+'</div></div>').join(''))+'</div></div>';
-  }catch(e){el.querySelector('.loading').outerHTML='<div class="msg-err">'+e.message+'</div>';}
+// ── State ─────────────────────────────────────────────────────────────────────
+let TOKEN = localStorage.getItem('ws_tok') || '';
+let USER  = JSON.parse(localStorage.getItem('ws_usr') || 'null');
+
+const SEV_COLOR = {CRITICAL:'#ef4444',HIGH:'#f97316',MEDIUM:'#eab308',LOW:'#3b82f6',INFO:'#6b7280'};
+const SEV_BG    = {CRITICAL:'rgba(239,68,68,.12)',HIGH:'rgba(249,115,22,.12)',MEDIUM:'rgba(234,179,8,.12)',LOW:'rgba(59,130,246,.12)',INFO:'rgba(107,114,128,.1)'};
+
+// ── API ───────────────────────────────────────────────────────────────────────
+async function api(method, path, body) {
+  const opts = {method, headers:{'Content-Type':'application/json',...(TOKEN?{Authorization:`Bearer ${TOKEN}`}:{})}};
+  if (body !== undefined) opts.body = JSON.stringify(body);
+  const r = await fetch(`/api${path}`, opts);
+  const d = await r.json().catch(()=>({}));
+  if (!r.ok) throw new Error(d.detail || r.statusText);
+  return d;
 }
-const PROFS={quick:{i:'[Q]',d:'Headers & exposure only'},standard:{i:'[S]',d:'Full input testing'},full:{i:'[F]',d:'Everything + blind SQLi'},api:{i:'[A]',d:'API & JSON endpoints'}};
-const TOGS=[{k:'run_xss',l:'Reflected XSS'},{k:'run_sqli',l:'Error SQLi'},{k:'run_blind_sqli',l:'Blind SQLi'},{k:'run_stored_xss',l:'Stored XSS'},{k:'run_csrf',l:'CSRF'},{k:'run_idor',l:'IDOR'},{k:'run_headers',l:'Headers'},{k:'run_redirects',l:'Redirects'},{k:'run_exposure',l:'File Exposure'},{k:'run_info_leak',l:'Info Leaks'}];
-let selProf='standard';
-function newScan(el){
-  el.innerHTML='<div class="page-hdr"><div class="page-title">New Scan</div><div class="page-sub">Configure and launch a vulnerability assessment</div></div><div id="scan-err" style="display:none"></div><div class="card" style="margin-bottom:14px"><div class="sec-title">Target URL</div><div class="fg" style="margin-bottom:20px"><input id="st" type="url" placeholder="https://target.example.com" style="font-size:.93rem;padding:11px 13px"></div><div class="sec-title">Scan Profile</div><div class="profile-grid">'+Object.entries(PROFS).map(([k,v])=>'<div class="prof-btn '+(k===selProf?'sel':'')+'" id="pp-'+k+'" onclick="selP(\''+k+'\')"><div class="pi">'+v.i+'</div><div class="pn">'+k[0].toUpperCase()+k.slice(1)+'</div><div class="pd">'+v.d+'</div></div>').join('')+'</div><div class="divider"></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px"><div class="fg" style="margin:0"><label>Max Depth</label><select id="sd">'+[1,2,3,4,5].map(n=>'<option '+(n===3?'selected':'')+'>'+n+'</option>').join('')+'</select></div><div class="fg" style="margin:0"><label>Max Pages</label><select id="sp">'+[25,50,100,200,500].map(n=>'<option '+(n===100?'selected':'')+'>'+n+'</option>').join('')+'</select></div><div class="fg" style="margin:0"><label>Request Delay (s)</label><select id="sl">'+['0.1','0.3','0.5','1.0','2.0'].map(n=>'<option '+(n==='0.3'?'selected':'')+'>'+n+'</option>').join('')+'</select></div></div><div class="sec-title">Module Overrides</div><div class="toggles">'+TOGS.map(t=>'<label class="tog"><input type="checkbox" id="t-'+t.k+'"> '+t.l+'</label>').join('')+'</div></div><button class="btn btn-primary" onclick="launch()" id="lb" style="padding:9px 20px">Launch Scan</button><span id="ls" class="text-muted text-sm" style="margin-left:10px"></span>';
-  selP(selProf);
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+function showAuthErr(msg) {
+  const el = document.getElementById('auth-err');
+  el.textContent = msg; el.style.display = 'block';
 }
-function selP(p){selProf=p;document.querySelectorAll('.prof-btn').forEach(b=>b.classList.remove('sel'));document.getElementById('pp-'+p)?.classList.add('sel');}
-async function launch(){
-  const t=document.getElementById('st').value.trim();
-  if(!t){const e=document.getElementById('scan-err');e.className='msg-err';e.textContent='Enter a target URL.';e.style.display='flex';return;}
-  const ov={};TOGS.forEach(t=>{const el=document.getElementById('t-'+t.k);if(el?.checked)ov[t.k]=true;});
-  const btn=document.getElementById('lb');btn.disabled=true;document.getElementById('ls').textContent='Starting…';document.getElementById('scan-err').style.display='none';
-  try{const s=await api('POST','/scans',{target:t,profile:selProf,max_depth:+document.getElementById('sd').value,max_pages:+document.getElementById('sp').value,delay:+document.getElementById('sl').value,...ov});go('scan-live',s);}
-  catch(e){const er=document.getElementById('scan-err');er.className='msg-err';er.textContent=e.message;er.style.display='flex';btn.disabled=false;document.getElementById('ls').textContent='';}
+function showTab(tab) {
+  document.getElementById('auth-err').style.display = 'none';
+  document.getElementById('tab-login').style.display    = tab === 'login'    ? '' : 'none';
+  document.getElementById('tab-register').style.display = tab === 'register' ? '' : 'none';
+  document.querySelectorAll('.auth-tab').forEach((el,i) =>
+    el.classList.toggle('active', (i===0) === (tab==='login'))
+  );
 }
-function scanLivePage(el,scan){
-  el.innerHTML='<div style="display:flex;align-items:center;gap:9px;margin-bottom:5px"><button class="btn btn-ghost btn-sm" onclick="go(\'scans\')">&#8592; Back</button><div class="page-title" style="margin:0">Scanning in progress</div><div class="spinner"></div></div><div style="font-family:\'JetBrains Mono\',monospace;font-size:.76rem;color:var(--text2);margin-bottom:16px">'+esc(scan.target)+'</div><div class="card"><div style="display:flex;justify-content:space-between;font-size:.74rem;color:var(--text2);margin-bottom:5px"><span id="ph-lbl">Initialising</span><span id="ph-pct" style="font-family:\'JetBrains Mono\',monospace"></span></div><div class="pb-wrap"><div class="pb" id="pb" style="width:2%"></div></div><div class="terminal mt2" id="scan-log"></div><div id="lf-hdr" style="display:none;margin-top:14px" class="sec-title">Live Findings</div><div class="live-finds" id="lf"></div></div><div id="done-area" style="display:none;margin-top:14px"><button class="btn btn-primary" onclick="go(\'scan-detail\',{id:\''+scan.id+'\'})">View Full Report &#8594;</button></div>';
-  const logEl=document.getElementById('scan-log'),lfEl=document.getElementById('lf');
-  const PP={crawling:10,discovery:22,headers:32,csrf:38,info_leak:46,exposure:56,stored_xss:66,fuzzing:95};
-  function addLog(txt,cls=''){const d=document.createElement('div');if(cls)d.className='tl-'+cls;d.textContent='['+new Date().toLocaleTimeString('en',{hour12:false})+'] '+txt;logEl.appendChild(d);logEl.scrollTop=logEl.scrollHeight;}
-  const wsProto=location.protocol==='https:'?'wss':'ws';
-  const ws=new WebSocket(wsProto+'://'+location.host+'/api/ws/'+scan.id+'?token='+TOKEN);
-  ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.type==='phase'){document.getElementById('pb').style.width=(PP[m.data.phase]||0)+'%';document.getElementById('ph-lbl').textContent=m.data.message;addLog(m.data.message,'phase');}else if(m.type==='progress'){if(m.data.current&&m.data.total){document.getElementById('pb').style.width=Math.min(94,66+(m.data.current/m.data.total*28))+'%';document.getElementById('ph-pct').textContent=m.data.current+' / '+m.data.total;}addLog(m.data.message);}else if(m.type==='finding'){const f=m.data;document.getElementById('lf-hdr').style.display='';const row=document.createElement('div');row.className='lf-row';row.innerHTML='<span class="sdot" style="background:'+SC[f.severity]+'"></span><span style="color:'+SC[f.severity]+';font-weight:700;width:70px;font-size:.69rem;font-family:\'JetBrains Mono\',monospace">'+f.severity+'</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(f.vuln_type)+'</span>';lfEl.appendChild(row);lfEl.scrollTop=lfEl.scrollHeight;addLog('FOUND: '+f.vuln_type+' ['+f.severity+']','find');}else if(m.type==='complete'){document.getElementById('pb').style.width='100%';document.getElementById('ph-lbl').textContent='Scan complete';const s=m.data.summary;addLog('Scan complete — '+s.total+' findings: '+s.critical+' CRIT / '+s.high+' HIGH / '+s.medium+' MED / '+s.low+' LOW','ok');document.getElementById('done-area').style.display='';}else if(m.type==='error'){addLog('Error: '+m.data.message,'err');document.getElementById('done-area').style.display='';}};
-  ws.onerror=()=>addLog('WebSocket error','err');
+async function doLogin() {
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Signing in';
+  try {
+    const d = await api('POST','/auth/login',{username:document.getElementById('login-user').value.trim(),password:document.getElementById('login-pass').value});
+    setSession(d);
+  } catch(e) { showAuthErr(e.message); } finally { btn.disabled=false; btn.textContent='Sign in'; }
 }
-async function scanHistory(el){
-  el.innerHTML='<div class="page-hdr" style="display:flex;justify-content:space-between"><div><div class="page-title">Scan History</div><div class="page-sub">All vulnerability assessments</div></div></div><div class="loading"><div class="spinner"></div> Loading</div>';
-  try{const scans=await api('GET','/scans?limit=100');el.innerHTML='<div class="page-hdr" style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="page-title">Scan History</div><div class="page-sub">'+scans.length+' scan'+(scans.length!==1?'s':'')+'</div></div><button class="btn btn-primary btn-sm" onclick="go(\'new-scan\')">New Scan</button></div><div class="scan-list">'+(scans.length?scans.map(scanRow).join(''):'<div class="empty">No scans yet.</div>')+'</div>';}
-  catch(e){el.innerHTML='<div class="msg-err">'+e.message+'</div>';}
+async function doRegister() {
+  try {
+    const d = await api('POST','/auth/register',{username:document.getElementById('reg-user').value.trim(),email:document.getElementById('reg-email').value.trim(),password:document.getElementById('reg-pass').value});
+    setSession(d);
+  } catch(e) { showAuthErr(e.message); }
 }
-async function scanDetailPage(el,{id}){
-  el.innerHTML='<div class="loading"><div class="spinner"></div> Loading scan</div>';
-  try{
-    const scan=await api('GET','/scans/'+id);const s=scan.summary||{};_fIdx=0;
-    el.innerHTML='<div style="margin-bottom:18px"><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:5px"><button class="btn btn-ghost btn-sm" onclick="go(\'scans\')">&#8592; Back</button><div class="page-title" style="margin:0;flex:1;font-size:1.05rem">'+esc(scan.target)+'</div>'+statusPill(scan.status)+'</div><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><span class="text-muted text-sm">'+scan.profile+' &middot; '+rel(scan.created_at)+' &middot; '+(s.pages_crawled||0)+' pages &middot; '+(s.input_vectors||0)+' vectors &middot; '+(s.duration_s||0)+'s</span><div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:auto"><a class="report-btn" href="/api/scans/'+id+'/report/html" target="_blank">HTML</a><a class="report-btn" href="/api/scans/'+id+'/report/markdown" target="_blank">Markdown</a><a class="report-btn" href="/api/scans/'+id+'/report/json" target="_blank">JSON</a><button class="btn btn-danger btn-sm" onclick="delScan(\''+id+'\')">Delete</button></div></div></div><div class="stats-grid" style="margin-bottom:20px">'+['CRITICAL','HIGH','MEDIUM','LOW','INFO'].map(sv=>'<div class="stat" style="border-left:3px solid '+SC[sv]+'"><div class="lbl" style="color:'+SC[sv]+'">'+sv+'</div><div class="val" style="color:'+SC[sv]+'">'+(s[sv.toLowerCase()]||0)+'</div></div>').join('')+'</div><div id="finds-wrap">'+renderFinds(scan.findings||[])+'</div>';
-  }catch(e){el.innerHTML='<div class="msg-err">'+e.message+'</div>';}
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const w = document.getElementById('auth-wrapper');
+  if (!w || w.style.display === 'none') return;
+  if (document.getElementById('tab-register').style.display === 'none') doLogin(); else doRegister();
+});
+function setSession(d) {
+  TOKEN = d.access_token; USER = d.user;
+  localStorage.setItem('ws_tok', TOKEN); localStorage.setItem('ws_usr', JSON.stringify(USER));
+  bootApp();
 }
-let _fIdx=0;
-function renderFinds(fs){
-  if(!fs.length)return '<div class="empty">No vulnerabilities detected.</div>';
-  const bySev={};fs.forEach(f=>{(bySev[f.severity]=bySev[f.severity]||[]).push(f);});
-  return '<div class="sev-filters"><span class="text-xs text-muted" style="margin-right:2px">Filter:</span><span class="sev-filter active" onclick="filtF(\'ALL\',this)" style="color:var(--text2)">All ('+fs.length+')</span>'+['CRITICAL','HIGH','MEDIUM','LOW','INFO'].filter(s=>bySev[s]).map(s=>'<span class="sev-filter" onclick="filtF(\''+s+'\',this)" style="color:'+SC[s]+'">'+s+' ('+bySev[s].length+')</span>').join('')+'</div><div id="fl">'+fs.map(findCard).join('')+'</div>';
+async function doLogout() {
+  try { await api('POST','/auth/logout'); } catch(_) {}
+  TOKEN = ''; USER = null;
+  localStorage.removeItem('ws_tok'); localStorage.removeItem('ws_usr');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('auth-wrapper').style.display = 'flex';
+  showTab('login');
 }
-function filtF(sev,btn){document.querySelectorAll('.sev-filter').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.fc').forEach(c=>c.style.display=(sev==='ALL'||c.dataset.sev===sev)?'':'none');}
-function findCard(f){const i=_fIdx++;return '<div class="fc" data-sev="'+f.severity+'"><div class="fh" style="color:'+SC[f.severity]+'" onclick="toggleF('+i+')"><span class="sdot" style="background:'+SC[f.severity]+'"></span>'+sevBadge(f.severity)+'<span class="ftype">'+esc(f.vuln_type)+'</span><span class="tag">'+f.method+'</span><span class="text-xs text-muted" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">'+esc(f.url)+'</span></div><div class="fb" id="fb-'+i+'"><table class="meta-tbl"><tr><td>URL</td><td>'+esc(f.url)+'</td></tr><tr><td>Parameter</td><td>'+esc(f.param)+'</td></tr><tr><td>CWE</td><td>'+(f.cwe||'N/A')+'</td></tr><tr><td>Confidence</td><td>'+(f.confidence||'N/A')+'</td></tr><tr><td>Indicator</td><td>'+esc(f.response_indicator||'')+'</td></tr></table><div class="sec-title">Description</div><p style="font-size:.79rem;color:var(--text2);line-height:1.65">'+esc(f.description||'')+'</p>'+(f.evidence_snippet?'<div class="sec-title mt2">Evidence</div><pre class="cb">'+esc(f.evidence_snippet)+'</pre>':'')+(f.request_example?'<div class="sec-title mt2">Request</div><pre class="cb">'+esc(f.request_example)+'</pre>':'')+'<div class="mit"><strong>Mitigation:</strong> '+esc(f.mitigation||'')+'</div></div></div>';}
-function toggleF(i){document.getElementById('fb-'+i)?.classList.toggle('open');}
-async function delScan(id){if(!confirm('Delete this scan and all findings?'))return;try{await api('DELETE','/scans/'+id);go('scans');}catch(e){alert(e.message);}}
-async function reportDiff(el){
-  const scans=await api('GET','/scans?limit=100').catch(()=>[]);const done=scans.filter(s=>s.status==='complete');const opts=done.map(s=>'<option value="'+s.id+'">'+esc(s.target)+' — '+rel(s.created_at)+'</option>').join('');
-  el.innerHTML='<div class="page-hdr"><div class="page-title">Report Diff</div><div class="page-sub">Compare two scans to track fixed and new vulnerabilities</div></div><div class="card" style="max-width:560px"><div class="fg"><label>Before scan (baseline)</label><select id="db">'+(opts||'<option>No completed scans</option>')+'</select></div><div class="fg"><label>After scan (comparison)</label><select id="da">'+(opts||'<option>No completed scans</option>')+'</select></div><button class="btn btn-primary" onclick="runDiff()">Compare Reports</button></div><div id="dr" class="mt4"></div>';
+function bootApp() {
+  document.getElementById('auth-wrapper').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  const u = USER?.username || '';
+  document.getElementById('nav-username').textContent = u;
+  document.getElementById('nav-avatar').textContent = u[0]?.toUpperCase() || '?';
+  if (USER?.is_admin) {
+    document.getElementById('admin-nav').style.display = '';
+    document.getElementById('nav-crown').style.display = '';
+  }
+  navigate('dashboard');
 }
-async function runDiff(){
-  const b=document.getElementById('db').value,a=document.getElementById('da').value;if(b===a){alert('Select two different scans.');return;}
-  const r=document.getElementById('dr');r.innerHTML='<div class="loading"><div class="spinner"></div> Comparing</div>';
-  try{const d=await api('POST','/reports/diff',{scan_id_before:b,scan_id_after:a});_fIdx=0;r.innerHTML='<div class="stats-grid" style="max-width:480px;margin-bottom:18px"><div class="stat" style="border-left:3px solid '+SC.CRITICAL+'"><div class="lbl">New</div><div class="val" style="color:'+SC.CRITICAL+'">'+d.new_findings.length+'</div></div><div class="stat" style="border-left:3px solid var(--green)"><div class="lbl">Resolved</div><div class="val" style="color:var(--green)">'+d.resolved_findings.length+'</div></div><div class="stat"><div class="lbl">Unchanged</div><div class="val">'+d.unchanged_count+'</div></div><div class="stat" style="border-left:3px solid var(--orange)"><div class="lbl">Regressions</div><div class="val" style="color:var(--orange)">'+d.regression_count+'</div></div></div>'+(d.new_findings.length?'<div class="mt3"><div class="sec-title" style="color:'+SC.CRITICAL+'">NEW VULNERABILITIES ('+d.new_findings.length+')</div>'+d.new_findings.map(findCard).join('')+'</div>':'')+(d.resolved_findings.length?'<div class="mt3"><div class="sec-title" style="color:var(--green)">RESOLVED ('+d.resolved_findings.length+')</div>'+d.resolved_findings.map(findCard).join('')+'</div>':'')+((!d.new_findings.length&&!d.resolved_findings.length)?'<div class="empty">No changes between scans.</div>':'');}
-  catch(e){r.innerHTML='<div class="msg-err">'+e.message+'</div>';}
+
+// ── Routing ───────────────────────────────────────────────────────────────────
+function navigate(page, data=null) {
+  document.querySelectorAll('.nav-link').forEach(l =>
+    l.classList.toggle('active', l.dataset.page === page)
+  );
+  const el = document.getElementById('page-content');
+  el.innerHTML = '';
+  const map = {dashboard:pageDashboard,'new-scan':pageNewScan,scans:pageScanHistory,diff:pageReportDiff,settings:pageSettings,admin:pageAdmin,'scan-live':pageScanLive,'scan-detail':pageScanDetail};
+  if (map[page]) map[page](el, data);
 }
-function settingsPage(el){
-  el.innerHTML='<div class="page-hdr"><div class="page-title">Settings</div><div class="page-sub">Account configuration</div></div><div class="card" style="max-width:420px"><div class="sec-title">Account</div><div style="font-size:.82rem;color:var(--text2);margin-bottom:14px">Signed in as <strong style="color:var(--text)">'+esc(USER?.username||'')+'</strong>'+(USER?.is_admin?'<span class="sev-badge" style="background:rgba(139,92,246,.14);color:var(--purple);margin-left:7px">ADMIN</span>':'')+'</div><div class="divider"></div><div class="sec-title mt3">Change Password</div><div id="pw-msg"></div><div class="fg"><label>Current password</label><input id="pc" type="password"></div><div class="fg"><label>New password</label><input id="pn" type="password"></div><button class="btn btn-primary btn-sm" onclick="chPw()">Update</button></div>';
+
+// ── UI helpers ────────────────────────────────────────────────────────────────
+function sevBadge(s) { return `<span class="sev-badge" style="background:${SEV_BG[s]||SEV_BG.INFO};color:${SEV_COLOR[s]||SEV_COLOR.INFO}">${s}</span>`; }
+function statusPill(s) { return `<span class="status-pill sp-${s}">${s.toUpperCase()}</span>`; }
+function relTime(iso) {
+  if (!iso) return '';
+  const d = Math.round((Date.now()-new Date(iso))/1000);
+  if (d<60) return `${d}s ago`; if (d<3600) return `${Math.floor(d/60)}m ago`;
+  if (d<86400) return `${Math.floor(d/3600)}h ago`; return new Date(iso).toLocaleDateString();
 }
-async function chPw(){const m=document.getElementById('pw-msg');try{await api('PUT','/users/me/password',{current_password:document.getElementById('pc').value,new_password:document.getElementById('pn').value});m.className='msg-ok';m.textContent='Password updated.';m.style.display='';document.getElementById('pc').value='';document.getElementById('pn').value='';}catch(e){m.className='msg-err';m.textContent=e.message;m.style.display='';}}
-let adminTab='overview';
-function adminPage(el){
-  if(!USER?.is_admin){el.innerHTML='<div class="msg-err">Admin access required.</div>';return;}
-  el.innerHTML='<div class="page-hdr"><div class="page-title">Admin Panel</div><div class="page-sub">System administration and security monitoring</div></div><div class="admin-tabs"><div class="atab active" id="at-overview" onclick="aSwitch(\'overview\')">Overview</div><div class="atab" id="at-users" onclick="aSwitch(\'users\')">Users</div><div class="atab" id="at-scans" onclick="aSwitch(\'scans\')">All Scans</div><div class="atab" id="at-audit" onclick="aSwitch(\'audit\')">Audit Log</div><div class="atab" id="at-logins" onclick="aSwitch(\'logins\')">Login Attempts</div></div><div id="ab"></div>';
-  aSwitch(adminTab);
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function scanItemIcon(st) {
+  const cls = `scan-item-icon si-${st}`;
+  const lbl = {complete:'OK',running:'RUN',pending:'...',error:'ERR'};
+  return `<div class="${cls}">${lbl[st]||'?'}</div>`;
 }
-function aSwitch(tab){adminTab=tab;document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));document.getElementById('at-'+tab)?.classList.add('active');const b=document.getElementById('ab');if(!b)return;b.innerHTML='<div class="loading"><div class="spinner"></div> Loading</div>';({overview:aOverview,users:aUsers,scans:aScans,audit:aAudit,logins:aLogins})[tab]?.(b);}
-async function aOverview(el){
-  try{const s=await api('GET','/admin/stats');el.innerHTML='<div class="stats-grid"><div class="stat"><div class="lbl">Total Users</div><div class="val">'+s.total_users+'</div></div><div class="stat"><div class="lbl">Active</div><div class="val" style="color:var(--green)">'+s.active_users+'</div></div><div class="stat"><div class="lbl">Admins</div><div class="val" style="color:var(--purple)">'+s.admin_users+'</div></div><div class="stat"><div class="lbl">Total Scans</div><div class="val">'+s.total_scans+'</div></div><div class="stat"><div class="lbl">Running</div><div class="val" style="color:var(--accent2)">'+s.running_scans+'</div></div><div class="stat"><div class="lbl">Complete</div><div class="val" style="color:var(--green)">'+s.complete_scans+'</div></div><div class="stat"><div class="lbl">Total Findings</div><div class="val">'+s.total_findings+'</div></div><div class="stat" style="border-left:3px solid '+SC.CRITICAL+'"><div class="lbl">Criticals</div><div class="val" style="color:'+SC.CRITICAL+'">'+s.critical_findings+'</div></div><div class="stat" style="border-left:3px solid '+(s.failed_logins_24h>20?SC.CRITICAL:'var(--border)')+'"><div class="lbl">Failed Logins 24h</div><div class="val" style="color:'+(s.failed_logins_24h>20?SC.CRITICAL:'var(--text)')+'">'+s.failed_logins_24h+'</div></div></div><div class="card" style="border-left:3px solid '+(s.failed_logins_24h>20?SC.CRITICAL:'var(--green)')+'"><div style="font-weight:600;font-size:.84rem;color:'+(s.failed_logins_24h>20?'#fca5a5':'var(--green)')+'">'+( s.failed_logins_24h>20?'Elevated brute-force activity detected':'Security status normal')+'</div><div class="text-muted text-xs mt1">'+s.failed_logins_24h+' failed login attempt'+(s.failed_logins_24h!==1?'s':'')+' in the last 24 hours. '+(s.failed_logins_24h>20?'Review login attempts for details.':'No action required.')+'</div></div>';}
-  catch(e){el.innerHTML='<div class="msg-err">'+e.message+'</div>';}
+function scanItemHtml(s) {
+  const critH = s.status==='complete'
+    ? `<span style="color:${SEV_COLOR.CRITICAL};font-size:.7rem;font-weight:700">${s.summary?.critical||0}C</span>
+       <span style="color:${SEV_COLOR.HIGH};font-size:.7rem;font-weight:700">${s.summary?.high||0}H</span>
+       <span style="color:${SEV_COLOR.MEDIUM};font-size:.7rem;font-weight:600">${s.summary?.medium||0}M</span>` : '';
+  return `<div class="scan-item" onclick="navigate('scan-detail',{id:'${s.id}'})">
+    ${scanItemIcon(s.status)}
+    <div style="flex:1;min-width:0">
+      <div class="scan-target">${esc(s.target)}</div>
+      <div class="scan-meta mt1">${relTime(s.created_at)} &middot; ${s.profile}${s.username?` &middot; ${s.username}`:''} &middot; ${s.summary?.pages_crawled||0} pages</div>
+    </div>
+    <div class="flex gap-2 items-center" style="flex-shrink:0">${critH}${statusPill(s.status)}</div>
+  </div>`;
 }
-let uSearch='',uSkip=0;
-async function aUsers(el){
-  try{const d=await api('GET','/admin/users?limit=50&skip='+uSkip+'&search='+encodeURIComponent(uSearch));el.innerHTML='<div style="display:flex;gap:8px;align-items:center;margin-bottom:14px"><input class="search-bar" placeholder="Search username or email" value="'+esc(uSearch)+'" oninput="uSearch=this.value" onkeydown="if(event.key===\'Enter\'){uSkip=0;aSwitch(\'users\')}"><button class="btn btn-ghost btn-sm" onclick="uSkip=0;aSwitch(\'users\')">Search</button><span class="text-muted text-xs">'+d.total+' user'+(d.total!==1?'s':'')+'</span></div><table class="tbl"><thead><tr><th>User</th><th>Email</th><th>Status</th><th>Scans</th><th>Last Login</th><th>Actions</th></tr></thead><tbody>'+d.users.map(u=>'<tr><td><div style="font-weight:500">'+esc(u.username)+'</div>'+(u.is_admin?'<span style="font-size:.62rem;color:var(--purple);font-family:\'JetBrains Mono\',monospace">ADMIN</span>':'')+'</td><td class="text-muted">'+esc(u.email)+'</td><td>'+(u.is_active?'<span class="status-pill sp-complete">ACTIVE</span>':'<span class="status-pill sp-error">SUSPENDED</span>')+'</td><td>'+u.scan_count+'</td><td class="text-muted" style="font-size:.72rem">'+(u.last_login?rel(u.last_login):'Never')+'</td><td>'+(u.id!==USER?.id?'<div class="flex gap-2"><button class="btn btn-sm '+(u.is_active?'btn-warn':'btn-ghost')+'" onclick="aToggleUser(\''+u.id+'\','+!u.is_active+')">'+(u.is_active?'Suspend':'Activate')+'</button><button class="btn btn-sm btn-ghost" onclick="aToggleAdmin(\''+u.id+'\','+!u.is_admin+')">'+(u.is_admin?'Remove admin':'Make admin')+'</button><button class="btn btn-danger btn-sm" onclick="aDelUser(\''+u.id+'\',\''+esc(u.username)+'\')">Delete</button></div>':'<span class="text-muted text-xs">(you)</span>')+'</td></tr>').join('')+'</tbody></table><div class="pagination">'+(uSkip>0?'<button class="btn btn-ghost btn-sm" onclick="uSkip=Math.max(0,uSkip-50);aSwitch(\'users\')">Prev</button>':'')+'<span class="text-muted">'+(uSkip+1)+'&#8211;'+Math.min(uSkip+50,d.total)+' of '+d.total+'</span>'+(uSkip+50<d.total?'<button class="btn btn-ghost btn-sm" onclick="uSkip+=50;aSwitch(\'users\')">Next</button>':'')+'</div>';}
-  catch(e){el.innerHTML='<div class="msg-err">'+e.message+'</div>';}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+async function pageDashboard(el) {
+  el.innerHTML = `<div class="page-hdr" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px"><div><div class="page-title">Dashboard</div><div class="page-sub">Security scan overview</div></div><button class="btn btn-primary btn-sm" onclick="navigate('new-scan')">New Scan</button></div><div class="loading"><div class="spinner"></div> Loading&hellip;</div>`;
+  try {
+    const scans = await api('GET','/scans?limit=100');
+    const done  = scans.filter(s=>s.status==='complete');
+    const tf    = done.reduce((a,s)=>a+(s.summary?.total||0),0);
+    const crits = done.reduce((a,s)=>a+(s.summary?.critical||0),0);
+    const highs = done.reduce((a,s)=>a+(s.summary?.high||0),0);
+    const meds  = done.reduce((a,s)=>a+(s.summary?.medium||0),0);
+    const lows  = done.reduce((a,s)=>a+(s.summary?.low||0),0);
+    const infos = done.reduce((a,s)=>a+(s.summary?.info||0),0);
+    const bySev = {CRITICAL:crits,HIGH:highs,MEDIUM:meds,LOW:lows,INFO:infos};
+    const maxS  = Math.max(...Object.values(bySev),1);
+    const bars  = Object.entries(bySev).filter(([,v])=>v>0).map(([s,v])=>`
+      <div class="sev-bar-row">
+        <div class="sev-bar-label" style="color:${SEV_COLOR[s]}">${s}</div>
+        <div class="sev-bar-track"><div class="sev-bar-fill" style="width:${Math.round(v/maxS*100)}%;background:${SEV_COLOR[s]}"></div></div>
+        <div class="sev-bar-count">${v}</div>
+      </div>`).join('');
+    el.innerHTML = `
+      <div class="page-hdr" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+        <div><div class="page-title">Dashboard</div><div class="page-sub">Security scan overview</div></div>
+        <button class="btn btn-primary btn-sm" onclick="navigate('new-scan')">New Scan</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat"><div class="lbl">Total Scans</div><div class="val">${scans.length}</div><div class="sub">${done.length} completed</div></div>
+        <div class="stat"><div class="lbl">Findings</div><div class="val">${tf}</div></div>
+        <div class="stat" style="border-left:3px solid ${SEV_COLOR.CRITICAL}"><div class="lbl">Critical</div><div class="val" style="color:${SEV_COLOR.CRITICAL}">${crits}</div></div>
+        <div class="stat" style="border-left:3px solid ${SEV_COLOR.HIGH}"><div class="lbl">High</div><div class="val" style="color:${SEV_COLOR.HIGH}">${highs}</div></div>
+        <div class="stat"><div class="lbl">Running</div><div class="val" style="color:var(--accent2)">${scans.filter(s=>s.status==='running').length}</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 280px;gap:12px">
+        <div class="card">
+          <div class="card-hdr"><div class="card-title">Recent Scans</div></div>
+          <div class="scan-list">${scans.slice(0,6).map(scanItemHtml).join('')||'<div class="empty">No scans yet.</div>'}</div>
+          ${scans.length>6?`<div style="text-align:center;margin-top:10px"><button class="btn btn-ghost btn-sm" onclick="navigate('scans')">View all ${scans.length} scans</button></div>`:''}
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-title">Breakdown</div></div>
+          ${tf===0?'<div class="empty" style="padding:20px 0">No findings yet.</div>':bars}
+        </div>
+      </div>`;
+  } catch(e) { el.querySelector('.loading').outerHTML = `<div class="msg-err">${esc(e.message)}</div>`; }
 }
-async function aToggleUser(id,active){try{await api('PATCH','/admin/users/'+id,{is_active:active});aSwitch('users');}catch(e){alert(e.message);}}
-async function aToggleAdmin(id,admin){if(!confirm((admin?'Grant':'Remove')+' admin rights?'))return;try{await api('PATCH','/admin/users/'+id,{is_admin:admin});aSwitch('users');}catch(e){alert(e.message);}}
-async function aDelUser(id,name){if(!confirm('Permanently delete user "'+name+'" and all their scans?'))return;try{await api('DELETE','/admin/users/'+id);aSwitch('users');}catch(e){alert(e.message);}}
-let sSkip=0;
-async function aScans(el){
-  try{const d=await api('GET','/admin/scans?limit=50&skip='+sSkip);el.innerHTML='<div style="display:flex;justify-content:space-between;margin-bottom:12px"><span class="text-muted text-xs">'+d.total+' total scans</span></div><div class="scan-list">'+d.scans.map(s=>'<div class="scan-item" style="cursor:default">'+scanIcon(s.status)+'<div style="flex:1;min-width:0"><div class="scan-target">'+esc(s.target)+'</div><div class="scan-meta mt1">'+rel(s.created_at)+' &middot; '+s.profile+(s.username?' &middot; by '+s.username:'')+'</div></div><div class="flex gap-2 items-center" style="flex-shrink:0">'+statusPill(s.status)+'<button class="btn btn-danger btn-sm" onclick="aDelScan(\''+s.id+'\')">Delete</button></div></div>').join('')+'</div><div class="pagination">'+(sSkip>0?'<button class="btn btn-ghost btn-sm" onclick="sSkip=Math.max(0,sSkip-50);aSwitch(\'scans\')">Prev</button>':'')+'<span class="text-muted">'+(sSkip+1)+'&#8211;'+Math.min(sSkip+50,d.total)+' of '+d.total+'</span>'+(sSkip+50<d.total?'<button class="btn btn-ghost btn-sm" onclick="sSkip+=50;aSwitch(\'scans\')">Next</button>':'')+'</div>';}
-  catch(e){el.innerHTML='<div class="msg-err">'+e.message+'</div>';}
+
+// ── New Scan ──────────────────────────────────────────────────────────────────
+const PROFILES = {
+  quick:    {code:'[Q]',desc:'Headers & exposure only — fastest'},
+  standard: {code:'[S]',desc:'Full input testing — recommended'},
+  full:     {code:'[F]',desc:'Everything including blind SQLi'},
+  api:      {code:'[A]',desc:'API & JSON endpoint focus'},
+};
+const TOGGLES = [
+  {key:'run_xss',label:'Reflected XSS'},{key:'run_sqli',label:'Error SQLi'},
+  {key:'run_blind_sqli',label:'Blind SQLi'},{key:'run_stored_xss',label:'Stored XSS'},
+  {key:'run_csrf',label:'CSRF Detection'},{key:'run_idor',label:'IDOR'},
+  {key:'run_headers',label:'Headers'},{key:'run_redirects',label:'Open Redirects'},
+  {key:'run_exposure',label:'File Exposure'},{key:'run_info_leak',label:'Info Leaks'},
+];
+let selectedProfile = 'standard';
+
+function pageNewScan(el) {
+  el.innerHTML = `
+    <div class="page-hdr"><div class="page-title">New Scan</div><div class="page-sub">Configure and launch a vulnerability assessment</div></div>
+    <div id="scan-launch-err" class="msg-err" style="display:none"></div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="sec-title">Target URL</div>
+      <div class="fg" style="margin-bottom:20px"><input id="scan-target" type="url" placeholder="https://target.example.com" style="font-size:.93rem;padding:11px 13px"></div>
+      <div class="sec-title">Scan Profile</div>
+      <div class="profile-grid">
+        ${Object.entries(PROFILES).map(([k,v])=>`
+          <div class="prof-btn ${k===selectedProfile?'sel':''}" id="prof-${k}" onclick="selectProfile('${k}')">
+            <div class="pi">${v.code}</div>
+            <div class="pn">${k[0].toUpperCase()+k.slice(1)}</div>
+            <div class="pd">${v.desc}</div>
+          </div>`).join('')}
+      </div>
+      <div class="divider"></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+        <div class="fg" style="margin:0"><label>Max Depth</label><select id="scan-depth">${[1,2,3,4,5].map(n=>`<option ${n===3?'selected':''}>${n}</option>`).join('')}</select></div>
+        <div class="fg" style="margin:0"><label>Max Pages</label><select id="scan-pages">${[25,50,100,200,500].map(n=>`<option ${n===100?'selected':''}>${n}</option>`).join('')}</select></div>
+        <div class="fg" style="margin:0"><label>Request Delay (s)</label><select id="scan-delay">${['0.1','0.3','0.5','1.0','2.0'].map(n=>`<option ${n==='0.3'?'selected':''}>${n}</option>`).join('')}</select></div>
+      </div>
+      <div class="sec-title">Module Overrides <span class="text-muted" style="text-transform:none;letter-spacing:0;font-size:.72rem">(override profile defaults)</span></div>
+      <div class="toggles">${TOGGLES.map(t=>`<label class="tog"><input type="checkbox" id="tog-${t.key}"> ${t.label}</label>`).join('')}</div>
+    </div>
+    <div class="flex gap-2 items-center">
+      <button class="btn btn-primary" onclick="launchScan()" id="launch-btn" style="padding:9px 20px;font-size:.84rem">Launch Scan</button>
+      <span id="launch-status" class="text-muted text-sm"></span>
+    </div>`;
+  selectProfile(selectedProfile);
 }
-async function aDelScan(id){if(!confirm('Delete this scan?'))return;try{await api('DELETE','/admin/scans/'+id);aSwitch('scans');}catch(e){alert(e.message);}}
-async function aAudit(el){
-  try{const d=await api('GET','/admin/audit?limit=100');el.innerHTML='<div class="text-muted text-xs" style="margin-bottom:10px">'+d.total+' total entries &middot; latest 100</div><table class="tbl"><thead><tr><th>Timestamp</th><th>Action</th><th>User</th><th>IP</th><th>Detail</th><th>Result</th></tr></thead><tbody>'+d.entries.map(e=>'<tr><td style="font-family:\'JetBrains Mono\',monospace;font-size:.71rem;color:var(--text2)">'+new Date(e.timestamp).toLocaleString()+'</td><td><code style="font-size:.71rem">'+esc(e.action)+'</code></td><td>'+(e.username?'<span style="font-weight:500">'+esc(e.username)+'</span>':'<span class="text-muted">—</span>')+'</td><td style="font-family:\'JetBrains Mono\',monospace;font-size:.71rem;color:var(--text2)">'+(e.ip||'—')+'</td><td class="text-muted" style="font-size:.74rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(e.detail||'')+'</td><td>'+(e.success?'<span style="color:var(--green);font-size:.71rem;font-family:\'JetBrains Mono\',monospace">OK</span>':'<span style="color:'+SC.CRITICAL+';font-size:.71rem;font-family:\'JetBrains Mono\',monospace">FAIL</span>')+'</td></tr>').join('')+'</tbody></table>';}
-  catch(e){el.innerHTML='<div class="msg-err">'+e.message+'</div>';}
+
+function selectProfile(p) {
+  selectedProfile = p;
+  document.querySelectorAll('.prof-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById(`prof-${p}`)?.classList.add('sel');
 }
-async function aLogins(el){
-  try{const d=await api('GET','/admin/login-attempts?limit=200');const fails=d.filter(a=>!a.success).length;el.innerHTML='<div class="stats-grid" style="max-width:400px;margin-bottom:16px"><div class="stat"><div class="lbl">Total</div><div class="val" style="font-size:1.3rem">'+d.length+'</div></div><div class="stat" style="border-left:3px solid var(--green)"><div class="lbl">Successful</div><div class="val" style="font-size:1.3rem;color:var(--green)">'+(d.length-fails)+'</div></div><div class="stat" style="border-left:3px solid '+SC.CRITICAL+'"><div class="lbl">Failed</div><div class="val" style="font-size:1.3rem;color:'+SC.CRITICAL+'">'+fails+'</div></div></div><table class="tbl"><thead><tr><th>Timestamp</th><th>IP Address</th><th>Username</th><th>Result</th></tr></thead><tbody>'+d.map(a=>'<tr><td style="font-family:\'JetBrains Mono\',monospace;font-size:.71rem;color:var(--text2)">'+new Date(a.timestamp).toLocaleString()+'</td><td><code style="font-size:.72rem">'+esc(a.ip)+'</code></td><td style="font-weight:500">'+esc(a.username)+'</td><td>'+(a.success?'<span style="color:var(--green);font-size:.74rem;font-weight:600;font-family:\'JetBrains Mono\',monospace">SUCCESS</span>':'<span style="color:'+SC.CRITICAL+';font-size:.74rem;font-weight:600;font-family:\'JetBrains Mono\',monospace">FAILED</span>')+'</td></tr>').join('')+'</tbody></table>';}
-  catch(e){el.innerHTML='<div class="msg-err">'+e.message+'</div>';}
+
+async function launchScan() {
+  const target = document.getElementById('scan-target').value.trim();
+  if (!target) {
+    const e = document.getElementById('scan-launch-err');
+    e.textContent='Please enter a target URL.'; e.style.display='block'; return;
+  }
+  const overrides = {};
+  TOGGLES.forEach(t=>{ const el=document.getElementById(`tog-${t.key}`); if(el?.checked) overrides[t.key]=true; });
+  const btn = document.getElementById('launch-btn');
+  btn.disabled=true; document.getElementById('launch-status').textContent='Starting…';
+  document.getElementById('scan-launch-err').style.display='none';
+  try {
+    const scan = await api('POST','/scans',{target,profile:selectedProfile,max_depth:+document.getElementById('scan-depth').value,max_pages:+document.getElementById('scan-pages').value,delay:+document.getElementById('scan-delay').value,...overrides});
+    navigate('scan-live', scan);
+  } catch(e) {
+    const err = document.getElementById('scan-launch-err');
+    err.textContent=e.message; err.style.display='block';
+    btn.disabled=false; document.getElementById('launch-status').textContent='';
+  }
 }
-if(TOKEN&&USER)bootApp();else document.getElementById('auth-wrap').style.display='flex';
+
+// ── Live Scan ─────────────────────────────────────────────────────────────────
+function pageScanLive(el, scan) {
+  el.innerHTML = `
+    <div class="flex gap-2 items-center" style="margin-bottom:5px">
+      <button class="btn btn-ghost btn-sm" onclick="navigate('scans')">&#8592; Back</button>
+      <div class="page-title" style="margin:0">Scanning in progress</div>
+      <div class="spinner"></div>
+    </div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:.76rem;color:var(--text2);margin-bottom:16px">${esc(scan.target)}</div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;font-size:.74rem;color:var(--text2);margin-bottom:5px">
+        <span id="phase-label">Initialising&hellip;</span>
+        <span id="phase-pct" style="font-family:'JetBrains Mono',monospace"></span>
+      </div>
+      <div class="pb-wrap"><div class="pb" id="progress-bar" style="width:2%"></div></div>
+      <div class="terminal mt2" id="scan-log"></div>
+      <div id="live-finds-hdr" class="sec-title mt3" style="display:none">Live Findings</div>
+      <div class="live-finds" id="live-finds"></div>
+    </div>
+    <div id="scan-done-area" style="display:none;margin-top:14px">
+      <button class="btn btn-primary" onclick="navigate('scan-detail',{id:'${scan.id}'})">View Full Report &#8594;</button>
+    </div>`;
+
+  const logEl  = document.getElementById('scan-log');
+  const findEl = document.getElementById('live-finds');
+  const PHASE_PCT = {crawling:10,discovery:22,headers:32,csrf:38,info_leak:46,exposure:56,stored_xss:66,fuzzing:95};
+
+  function addLog(text, cls='') {
+    const div = document.createElement('div');
+    if (cls) div.className = `tl-${cls}`;
+    div.textContent = `[${new Date().toLocaleTimeString('en',{hour12:false})}] ${text}`;
+    logEl.appendChild(div);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  const wsProto = location.protocol==='https:'?'wss':'ws';
+  const ws = new WebSocket(`${wsProto}://${location.host}/api/ws/${scan.id}?token=${TOKEN}`);
+
+  ws.onmessage = e => {
+    const m = JSON.parse(e.data);
+    if (m.type==='phase') {
+      document.getElementById('progress-bar').style.width = (PHASE_PCT[m.data.phase]||0)+'%';
+      document.getElementById('phase-label').textContent  = m.data.message;
+      addLog(m.data.message, 'phase');
+    } else if (m.type==='progress') {
+      if (m.data.current && m.data.total) {
+        document.getElementById('progress-bar').style.width = Math.min(94, 66+(m.data.current/m.data.total*28))+'%';
+        document.getElementById('phase-pct').textContent = `${m.data.current} / ${m.data.total}`;
+      }
+      addLog(m.data.message);
+    } else if (m.type==='finding') {
+      const f = m.data;
+      document.getElementById('live-finds-hdr').style.display = '';
+      const row = document.createElement('div');
+      row.className = 'lf-row';
+      row.innerHTML = `<span class="sdot" style="background:${SEV_COLOR[f.severity]||SEV_COLOR.INFO}"></span><span style="color:${SEV_COLOR[f.severity]};font-weight:700;width:70px;font-size:.69rem;font-family:'JetBrains Mono',monospace">${f.severity}</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.vuln_type)}</span><span class="text-xs text-muted" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">${esc(f.url)}</span>`;
+      findEl.appendChild(row); findEl.scrollTop=findEl.scrollHeight;
+      addLog(`FOUND: ${f.vuln_type} [${f.severity}] — ${f.url}`, 'find');
+    } else if (m.type==='complete') {
+      document.getElementById('progress-bar').style.width = '100%';
+      document.getElementById('phase-label').textContent  = 'Scan complete';
+      document.getElementById('phase-pct').textContent    = '';
+      const s = m.data.summary;
+      addLog(`Done — ${s.total} findings: ${s.critical} CRIT / ${s.high} HIGH / ${s.medium} MED / ${s.low} LOW`, 'ok');
+      document.getElementById('scan-done-area').style.display = '';
+    } else if (m.type==='error') {
+      addLog(`Error: ${m.data.message}`, 'err');
+      document.getElementById('scan-done-area').style.display = '';
+    }
+  };
+  ws.onerror = () => addLog('WebSocket connection error','err');
+}
+
+// ── Scan History ──────────────────────────────────────────────────────────────
+async function pageScanHistory(el) {
+  el.innerHTML = `<div class="page-hdr" style="display:flex;justify-content:space-between"><div><div class="page-title">Scan History</div><div class="page-sub">All vulnerability assessments</div></div></div><div class="loading"><div class="spinner"></div> Loading&hellip;</div>`;
+  try {
+    const scans = await api('GET','/scans?limit=100');
+    el.innerHTML = `
+      <div class="page-hdr" style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><div class="page-title">Scan History</div><div class="page-sub">${scans.length} scan${scans.length!==1?'s':''}</div></div>
+        <button class="btn btn-primary btn-sm" onclick="navigate('new-scan')">New Scan</button>
+      </div>
+      <div class="scan-list">${scans.length?scans.map(scanItemHtml).join(''):'<div class="empty">No scans yet. Start your first scan.</div>'}</div>`;
+  } catch(e) { el.innerHTML = `<div class="msg-err">${esc(e.message)}</div>`; }
+}
+
+// ── Scan Detail ───────────────────────────────────────────────────────────────
+async function pageScanDetail(el, {id}) {
+  el.innerHTML = `<div class="loading"><div class="spinner"></div> Loading scan&hellip;</div>`;
+  try {
+    const scan = await api('GET',`/scans/${id}`);
+    const s    = scan.summary || {};
+    _findingIdx = 0;
+    el.innerHTML = `
+      <div style="margin-bottom:18px">
+        <div class="flex items-center gap-2" style="flex-wrap:wrap;margin-bottom:5px">
+          <button class="btn btn-ghost btn-sm" onclick="navigate('scans')">&#8592; Back</button>
+          <div class="page-title" style="margin:0;flex:1;font-size:1.08rem">${esc(scan.target)}</div>
+          ${statusPill(scan.status)}
+        </div>
+        <div class="flex gap-2 items-center" style="flex-wrap:wrap;margin-top:6px">
+          <span class="text-muted text-sm">${scan.profile} &middot; ${relTime(scan.created_at)} &middot; ${s.pages_crawled||0} pages &middot; ${s.input_vectors||0} vectors &middot; ${s.duration_s||0}s</span>
+          <div class="flex gap-2" style="margin-left:auto;flex-wrap:wrap">
+            <a class="report-btn" href="/api/scans/${id}/report/html?token=${TOKEN}" target="_blank">HTML Report</a>
+            <a class="report-btn" href="/api/scans/${id}/report/markdown?token=${TOKEN}" target="_blank">Markdown</a>
+            <a class="report-btn" href="/api/scans/${id}/report/json?token=${TOKEN}" target="_blank">JSON</a>
+            <button class="btn btn-danger btn-sm" onclick="deleteScan('${id}')">Delete</button>
+          </div>
+        </div>
+      </div>
+      <div class="stats-grid" style="margin-bottom:20px">
+        ${['CRITICAL','HIGH','MEDIUM','LOW','INFO'].map(sv=>`
+          <div class="stat" style="border-left:3px solid ${SEV_COLOR[sv]}">
+            <div class="lbl" style="color:${SEV_COLOR[sv]}">${sv}</div>
+            <div class="val" style="color:${SEV_COLOR[sv]}">${s[sv.toLowerCase()]||0}</div>
+          </div>`).join('')}
+      </div>
+      <div id="findings-container">${renderFindings(scan.findings||[])}</div>`;
+  } catch(e) { el.innerHTML = `<div class="msg-err">${esc(e.message)}</div>`; }
+}
+
+// ── Findings ──────────────────────────────────────────────────────────────────
+let _findingIdx = 0;
+
+function renderFindings(findings) {
+  if (!findings.length) return '<div class="empty">No vulnerabilities detected.</div>';
+  const bySev = {};
+  findings.forEach(f => { (bySev[f.severity]=bySev[f.severity]||[]).push(f); });
+  return `
+    <div class="sev-filters">
+      <span class="text-xs text-muted" style="margin-right:4px">Filter:</span>
+      <span class="sev-filter active" onclick="filterFindings('ALL',this)" style="color:var(--text2)">All (${findings.length})</span>
+      ${['CRITICAL','HIGH','MEDIUM','LOW','INFO'].filter(s=>bySev[s]).map(s=>`<span class="sev-filter" onclick="filterFindings('${s}',this)" style="color:${SEV_COLOR[s]}">${s} (${bySev[s].length})</span>`).join('')}
+    </div>
+    <div id="findings-list">${findings.map(findingCard).join('')}</div>`;
+}
+
+function filterFindings(sev, btn) {
+  document.querySelectorAll('.sev-filter').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.fc').forEach(card=>{ card.style.display=(sev==='ALL'||card.dataset.sev===sev)?'':'none'; });
+}
+
+function findingCard(f) {
+  const idx = _findingIdx++;
+  return `
+    <div class="fc" data-sev="${f.severity}">
+      <div class="fh" style="color:${SEV_COLOR[f.severity]}" onclick="toggleFinding(${idx})">
+        <span class="sdot" style="background:${SEV_COLOR[f.severity]}"></span>
+        ${sevBadge(f.severity)}
+        <span class="ftype">${esc(f.vuln_type)}</span>
+        <span class="tag">${f.method}</span>
+        <span class="text-xs text-muted" style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">${esc(f.url)}</span>
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" style="flex-shrink:0;opacity:.4"><path d="M2 4l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="fb" id="finding-body-${idx}">
+        <table class="meta-table">
+          <tr><td>URL</td><td>${esc(f.url)}</td></tr>
+          <tr><td>Parameter</td><td>${esc(f.param)}</td></tr>
+          <tr><td>CWE</td><td>${f.cwe||'N/A'}</td></tr>
+          <tr><td>Confidence</td><td>${f.confidence||'N/A'}</td></tr>
+          <tr><td>Indicator</td><td>${esc(f.response_indicator||'')}</td></tr>
+        </table>
+        <div class="sec-title">Description</div>
+        <p style="font-size:.79rem;color:var(--text2);line-height:1.65">${esc(f.description||'')}</p>
+        ${f.evidence_snippet?`<div class="sec-title mt2">Evidence</div><pre class="code-block">${esc(f.evidence_snippet)}</pre>`:''}
+        ${f.request_example?`<div class="sec-title mt2">Request Example</div><pre class="code-block">${esc(f.request_example)}</pre>`:''}
+        <div class="mitigation"><strong>Mitigation:</strong> ${esc(f.mitigation||'')}</div>
+      </div>
+    </div>`;
+}
+
+function toggleFinding(idx) { document.getElementById(`finding-body-${idx}`)?.classList.toggle('open'); }
+
+async function deleteScan(id) {
+  if (!confirm('Delete this scan and all findings? This cannot be undone.')) return;
+  try { await api('DELETE',`/scans/${id}`); navigate('scans'); } catch(e) { alert(e.message); }
+}
+
+// ── Report Diff ───────────────────────────────────────────────────────────────
+async function pageReportDiff(el) {
+  const scans = await api('GET','/scans?limit=100').catch(()=>[]);
+  const done  = scans.filter(s=>s.status==='complete');
+  const opts  = done.map(s=>`<option value="${s.id}">${esc(s.target)} — ${relTime(s.created_at)}</option>`).join('');
+  el.innerHTML = `
+    <div class="page-hdr"><div class="page-title">Report Diff</div><div class="page-sub">Compare two scans — track fixed vulnerabilities and regressions</div></div>
+    <div class="card" style="max-width:560px;margin-bottom:20px">
+      <div class="fg"><label>Before scan (baseline)</label><select id="diff-before">${opts||'<option>No completed scans</option>'}</select></div>
+      <div class="fg"><label>After scan (comparison)</label><select id="diff-after">${opts||'<option>No completed scans</option>'}</select></div>
+      <button class="btn btn-primary" onclick="runDiff()">Compare Reports</button>
+    </div>
+    <div id="diff-result"></div>`;
+}
+
+async function runDiff() {
+  const before = document.getElementById('diff-before').value;
+  const after  = document.getElementById('diff-after').value;
+  if (before===after) { alert('Select two different scans.'); return; }
+  const res = document.getElementById('diff-result');
+  res.innerHTML = '<div class="loading"><div class="spinner"></div> Comparing&hellip;</div>';
+  try {
+    const d = await api('POST','/reports/diff',{scan_id_before:before,scan_id_after:after});
+    _findingIdx = 0;
+    res.innerHTML = `
+      <div class="stats-grid" style="max-width:500px;margin-bottom:20px">
+        <div class="stat" style="border-left:3px solid ${SEV_COLOR.CRITICAL}"><div class="lbl">New Findings</div><div class="val" style="color:${SEV_COLOR.CRITICAL}">${d.new_findings.length}</div></div>
+        <div class="stat" style="border-left:3px solid var(--green)"><div class="lbl">Resolved</div><div class="val" style="color:var(--green)">${d.resolved_findings.length}</div></div>
+        <div class="stat"><div class="lbl">Unchanged</div><div class="val">${d.unchanged_count}</div></div>
+        <div class="stat" style="border-left:3px solid var(--orange)"><div class="lbl">Regressions</div><div class="val" style="color:var(--orange)">${d.regression_count}</div></div>
+      </div>
+      ${d.new_findings.length?`<div class="mt3"><div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:${SEV_COLOR.CRITICAL};margin-bottom:8px;font-weight:600">New Vulnerabilities (${d.new_findings.length})</div>${d.new_findings.map(findingCard).join('')}</div>`:''}
+      ${d.resolved_findings.length?`<div class="mt3"><div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--green);margin-bottom:8px;font-weight:600">Resolved (${d.resolved_findings.length})</div>${d.resolved_findings.map(findingCard).join('')}</div>`:''}
+      ${!d.new_findings.length&&!d.resolved_findings.length?'<div class="empty">No changes detected between these two scans.</div>':''}`;
+  } catch(e) { res.innerHTML=`<div class="msg-err">${esc(e.message)}</div>`; }
+}
+
+// ── Settings ──────────────────────────────────────────────────────────────────
+function pageSettings(el) {
+  el.innerHTML = `
+    <div class="page-hdr"><div class="page-title">Settings</div><div class="page-sub">Account configuration</div></div>
+    <div class="card" style="max-width:420px">
+      <div class="sec-title">Account</div>
+      <div style="font-size:.82rem;color:var(--text2);margin-bottom:14px">
+        Signed in as <strong style="color:var(--text)">${esc(USER?.username||'')}</strong>
+        ${USER?.is_admin?`<span class="sev-badge" style="background:rgba(139,92,246,.14);color:var(--purple);margin-left:7px">ADMIN</span>`:''}
+      </div>
+      <div class="divider"></div>
+      <div class="sec-title mt3">Change Password</div>
+      <div id="pw-msg"></div>
+      <div class="fg"><label>Current password</label><input id="pw-current" type="password"></div>
+      <div class="fg"><label>New password</label><input id="pw-new" type="password"></div>
+      <button class="btn btn-primary btn-sm" onclick="changePassword()">Update Password</button>
+    </div>`;
+}
+async function changePassword() {
+  const msgEl = document.getElementById('pw-msg');
+  try {
+    await api('PUT','/users/me/password',{current_password:document.getElementById('pw-current').value,new_password:document.getElementById('pw-new').value});
+    msgEl.className='msg-ok'; msgEl.textContent='Password updated successfully.'; msgEl.style.display='';
+    document.getElementById('pw-current').value=''; document.getElementById('pw-new').value='';
+  } catch(e) { msgEl.className='msg-err'; msgEl.textContent=e.message; msgEl.style.display=''; }
+}
+
+// ── Admin Panel ───────────────────────────────────────────────────────────────
+let currentAdminTab = 'overview';
+
+function pageAdmin(el) {
+  if (!USER?.is_admin) { el.innerHTML='<div class="msg-err">Admin access required.</div>'; return; }
+  el.innerHTML = `
+    <div class="page-hdr"><div class="page-title">Admin Panel</div><div class="page-sub">System administration and security monitoring</div></div>
+    <div class="admin-tabs">
+      <div class="atab active" id="atab-overview" onclick="adminSwitch('overview')">Overview</div>
+      <div class="atab" id="atab-users"    onclick="adminSwitch('users')">Users</div>
+      <div class="atab" id="atab-scans"    onclick="adminSwitch('scans')">All Scans</div>
+      <div class="atab" id="atab-audit"    onclick="adminSwitch('audit')">Audit Log</div>
+      <div class="atab" id="atab-logins"   onclick="adminSwitch('logins')">Login Attempts</div>
+    </div>
+    <div id="admin-body"></div>`;
+  adminSwitch(currentAdminTab);
+}
+
+function adminSwitch(tab) {
+  currentAdminTab = tab;
+  document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(`atab-${tab}`)?.classList.add('active');
+  const body = document.getElementById('admin-body');
+  if (!body) return;
+  body.innerHTML = '<div class="loading"><div class="spinner"></div> Loading&hellip;</div>';
+  const fns = {overview:adminOverview,users:adminUsers,scans:adminScans,audit:adminAuditLog,logins:adminLoginAttempts};
+  if (fns[tab]) fns[tab](body);
+}
+
+async function adminOverview(el) {
+  try {
+    const s = await api('GET','/admin/stats');
+    el.innerHTML = `
+      <div class="stats-grid">
+        <div class="stat"><div class="lbl">Total Users</div><div class="val">${s.total_users}</div></div>
+        <div class="stat"><div class="lbl">Active Users</div><div class="val" style="color:var(--green)">${s.active_users}</div></div>
+        <div class="stat"><div class="lbl">Admin Users</div><div class="val" style="color:var(--purple)">${s.admin_users}</div></div>
+        <div class="stat"><div class="lbl">Total Scans</div><div class="val">${s.total_scans}</div></div>
+        <div class="stat"><div class="lbl">Running</div><div class="val" style="color:var(--accent2)">${s.running_scans}</div></div>
+        <div class="stat"><div class="lbl">Completed</div><div class="val" style="color:var(--green)">${s.complete_scans}</div></div>
+        <div class="stat"><div class="lbl">Total Findings</div><div class="val">${s.total_findings}</div></div>
+        <div class="stat" style="border-left:3px solid ${SEV_COLOR.CRITICAL}"><div class="lbl">Criticals</div><div class="val" style="color:${SEV_COLOR.CRITICAL}">${s.critical_findings}</div></div>
+        <div class="stat" style="border-left:3px solid ${s.failed_logins_24h>20?SEV_COLOR.CRITICAL:'var(--border)'}">
+          <div class="lbl">Failed Logins 24h</div>
+          <div class="val" style="color:${s.failed_logins_24h>20?SEV_COLOR.CRITICAL:'var(--text)'}">${s.failed_logins_24h}</div>
+        </div>
+      </div>
+      <div class="card" style="border-left:3px solid ${s.failed_logins_24h>20?SEV_COLOR.CRITICAL:'var(--green)'}">
+        <div style="font-weight:600;font-size:.85rem;color:${s.failed_logins_24h>20?'#fca5a5':'var(--green)'}">
+          ${s.failed_logins_24h>20?'Elevated brute-force activity detected':'Security status normal'}
+        </div>
+        <div class="text-muted text-xs mt1">
+          ${s.failed_logins_24h} failed login attempt${s.failed_logins_24h!==1?'s':''} in the last 24 hours.
+          ${s.failed_logins_24h>20?'Review the Login Attempts tab for details.':'No action required.'}
+        </div>
+      </div>`;
+  } catch(e) { el.innerHTML=`<div class="msg-err">${esc(e.message)}</div>`; }
+}
+
+let adminUserSearch='', adminUserSkip=0;
+async function adminUsers(el) {
+  try {
+    const d = await api('GET',`/admin/users?limit=50&skip=${adminUserSkip}&search=${encodeURIComponent(adminUserSearch)}`);
+    el.innerHTML = `
+      <div class="flex gap-2 items-center" style="margin-bottom:14px">
+        <input class="search-bar" type="text" placeholder="Search username or email&hellip;" value="${esc(adminUserSearch)}"
+               oninput="adminUserSearch=this.value"
+               onkeydown="if(event.key==='Enter'){adminUserSkip=0;adminSwitch('users')}">
+        <button class="btn btn-ghost btn-sm" onclick="adminUserSkip=0;adminSwitch('users')">Search</button>
+        <span class="text-muted text-xs">${d.total} user${d.total!==1?'s':''}</span>
+      </div>
+      <table class="tbl">
+        <thead><tr><th>User</th><th>Email</th><th>Status</th><th>Scans</th><th>Last Login</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${d.users.map(u=>`<tr>
+            <td><div style="font-weight:500">${esc(u.username)}</div>${u.is_admin?`<span style="font-size:.62rem;color:var(--purple);font-family:'JetBrains Mono',monospace">ADMIN</span>`:''}</td>
+            <td class="text-muted">${esc(u.email)}</td>
+            <td>${u.is_active?'<span class="status-pill sp-complete">ACTIVE</span>':'<span class="status-pill sp-error">SUSPENDED</span>'}</td>
+            <td style="font-variant-numeric:tabular-nums">${u.scan_count}</td>
+            <td class="text-muted text-xs">${u.last_login?relTime(u.last_login):'Never'}</td>
+            <td>${u.id!==USER?.id?`<div class="flex gap-2">
+              <button class="btn btn-sm ${u.is_active?'btn-warn':'btn-ghost'}" onclick="adminToggleUser('${u.id}',${!u.is_active})">${u.is_active?'Suspend':'Activate'}</button>
+              <button class="btn btn-sm btn-ghost" onclick="adminToggleAdmin('${u.id}',${!u.is_admin})">${u.is_admin?'Remove admin':'Make admin'}</button>
+              <button class="btn btn-danger btn-sm" onclick="adminDeleteUser('${u.id}','${esc(u.username)}')">Delete</button>
+            </div>`:'<span class="text-muted text-xs">(you)</span>'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="pagination">
+        ${adminUserSkip>0?`<button class="btn btn-ghost btn-sm" onclick="adminUserSkip=Math.max(0,adminUserSkip-50);adminSwitch('users')">Prev</button>`:''}
+        <span class="text-muted">${adminUserSkip+1}&ndash;${Math.min(adminUserSkip+50,d.total)} of ${d.total}</span>
+        ${adminUserSkip+50<d.total?`<button class="btn btn-ghost btn-sm" onclick="adminUserSkip+=50;adminSwitch('users')">Next</button>`:''}
+      </div>`;
+  } catch(e) { el.innerHTML=`<div class="msg-err">${esc(e.message)}</div>`; }
+}
+async function adminToggleUser(id,active){try{await api('PATCH',`/admin/users/${id}`,{is_active:active});adminSwitch('users');}catch(e){alert(e.message);}}
+async function adminToggleAdmin(id,isAdmin){if(!confirm(`${isAdmin?'Grant':'Remove'} admin rights for this user?`))return;try{await api('PATCH',`/admin/users/${id}`,{is_admin:isAdmin});adminSwitch('users');}catch(e){alert(e.message);}}
+async function adminDeleteUser(id,username){if(!confirm(`Permanently delete user "${username}" and ALL their scans?`))return;try{await api('DELETE',`/admin/users/${id}`);adminSwitch('users');}catch(e){alert(e.message);}}
+
+let adminScanSkip=0;
+async function adminScans(el) {
+  try {
+    const d = await api('GET',`/admin/scans?limit=50&skip=${adminScanSkip}`);
+    el.innerHTML = `
+      <div style="margin-bottom:12px"><span class="text-muted text-xs">${d.total} total scans across all users</span></div>
+      <div class="scan-list">
+        ${d.scans.map(s=>`<div class="scan-item" style="cursor:default">
+          ${scanItemIcon(s.status)}
+          <div style="flex:1;min-width:0">
+            <div class="scan-target">${esc(s.target)}</div>
+            <div class="scan-meta mt1">${relTime(s.created_at)} &middot; ${s.profile}${s.username?` &middot; by ${s.username}`:''}</div>
+          </div>
+          <div class="flex gap-2 items-center" style="flex-shrink:0">
+            ${s.status==='complete'?`<span style="color:${SEV_COLOR.CRITICAL};font-size:.7rem;font-weight:700">${s.summary?.critical||0}C</span>`:''}
+            ${statusPill(s.status)}
+            <button class="btn btn-danger btn-sm" onclick="adminDeleteScan('${s.id}')">Delete</button>
+          </div>
+        </div>`).join('')}
+      </div>
+      <div class="pagination">
+        ${adminScanSkip>0?`<button class="btn btn-ghost btn-sm" onclick="adminScanSkip=Math.max(0,adminScanSkip-50);adminSwitch('scans')">Prev</button>`:''}
+        <span class="text-muted">${adminScanSkip+1}&ndash;${Math.min(adminScanSkip+50,d.total)} of ${d.total}</span>
+        ${adminScanSkip+50<d.total?`<button class="btn btn-ghost btn-sm" onclick="adminScanSkip+=50;adminSwitch('scans')">Next</button>`:''}
+      </div>`;
+  } catch(e) { el.innerHTML=`<div class="msg-err">${esc(e.message)}</div>`; }
+}
+async function adminDeleteScan(id){if(!confirm('Delete this scan?'))return;try{await api('DELETE',`/admin/scans/${id}`);adminSwitch('scans');}catch(e){alert(e.message);}}
+
+async function adminAuditLog(el) {
+  try {
+    const d = await api('GET','/admin/audit?limit=100');
+    el.innerHTML = `
+      <div class="text-muted text-xs" style="margin-bottom:10px">${d.total} total entries &middot; showing latest 100</div>
+      <table class="tbl">
+        <thead><tr><th>Timestamp</th><th>Action</th><th>User</th><th>IP Address</th><th>Detail</th><th>Result</th></tr></thead>
+        <tbody>
+          ${d.entries.map(entry=>`<tr>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:.71rem;color:var(--text2)">${new Date(entry.timestamp).toLocaleString()}</td>
+            <td><code style="font-size:.71rem">${esc(entry.action)}</code></td>
+            <td>${entry.username?`<span style="font-weight:500">${esc(entry.username)}</span>`:'<span class="text-muted">&mdash;</span>'}</td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:.71rem;color:var(--text2)">${entry.ip||'&mdash;'}</td>
+            <td class="text-muted" style="font-size:.75rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(entry.detail||'')}</td>
+            <td>${entry.success?`<span style="color:var(--green);font-size:.71rem;font-family:'JetBrains Mono',monospace">OK</span>`:`<span style="color:${SEV_COLOR.CRITICAL};font-size:.71rem;font-family:'JetBrains Mono',monospace">FAIL</span>`}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch(e) { el.innerHTML=`<div class="msg-err">${esc(e.message)}</div>`; }
+}
+
+async function adminLoginAttempts(el) {
+  try {
+    const d = await api('GET','/admin/login-attempts?limit=200');
+    const successes = d.filter(a=>a.success).length;
+    const failures  = d.filter(a=>!a.success).length;
+    el.innerHTML = `
+      <div class="stats-grid" style="max-width:420px;margin-bottom:16px">
+        <div class="stat"><div class="lbl">Total</div><div class="val" style="font-size:1.3rem">${d.length}</div></div>
+        <div class="stat" style="border-left:3px solid var(--green)"><div class="lbl">Successful</div><div class="val" style="font-size:1.3rem;color:var(--green)">${successes}</div></div>
+        <div class="stat" style="border-left:3px solid ${SEV_COLOR.CRITICAL}"><div class="lbl">Failed</div><div class="val" style="font-size:1.3rem;color:${SEV_COLOR.CRITICAL}">${failures}</div></div>
+      </div>
+      <table class="tbl">
+        <thead><tr><th>Timestamp</th><th>IP Address</th><th>Username Attempted</th><th>Result</th></tr></thead>
+        <tbody>
+          ${d.map(a=>`<tr>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:.71rem;color:var(--text2)">${new Date(a.timestamp).toLocaleString()}</td>
+            <td><code style="font-size:.73rem">${esc(a.ip)}</code></td>
+            <td style="font-weight:500">${esc(a.username)}</td>
+            <td>${a.success?`<span style="color:var(--green);font-size:.74rem;font-weight:600;font-family:'JetBrains Mono',monospace">SUCCESS</span>`:`<span style="color:${SEV_COLOR.CRITICAL};font-size:.74rem;font-weight:600;font-family:'JetBrains Mono',monospace">FAILED</span>`}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch(e) { el.innerHTML=`<div class="msg-err">${esc(e.message)}</div>`; }
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+if (TOKEN && USER) bootApp();
+else document.getElementById('auth-wrapper').style.display = 'flex';
 </script>
 </body>
 </html>
