@@ -217,22 +217,94 @@ async def delete_scan(scan_id: str, request: Request, user=Depends(get_current_u
     await audit("scan_delete", user, request, detail=scan_id)
 
 
+async def _resolve_report_user(
+    scan_id: str,
+    user=Depends(get_current_user),
+    token: Optional[str] = Query(default=None),
+) -> tuple[dict, str]:
+    """
+    Resolve auth for report endpoints.
+    Browser tabs can't send Authorization headers, so we also accept
+    ?token=<jwt> as a query parameter — identical to how WebSockets work.
+    """
+    if user:
+        return user, scan_id
+    # Fallback: validate token from query string
+    if token:
+        from api.auth import decode_token, is_blacklisted
+        payload = decode_token(token)
+        if payload and not await is_blacklisted(token):
+            db   = get_db()
+            u    = await db.users.find_one({"_id": payload["sub"]})
+            if u and u.get("is_active", True):
+                return u, scan_id
+    raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+
+async def _get_report_scan(scan_id: str, token: Optional[str] = Query(default=None)) -> dict:
+    """Shared dependency: authenticate via header OR ?token= query param."""
+    from api.auth import decode_token, is_blacklisted
+    from fastapi.security import HTTPBearer
+    db = get_db()
+
+    # Try to get user from token query param first (browser tab use)
+    if token:
+        payload = decode_token(token)
+        if payload and not await is_blacklisted(token):
+            u = await db.users.find_one({"_id": payload["sub"]})
+            if u and u.get("is_active", True):
+                scan = await db.scans.find_one({"_id": scan_id, "user_id": str(u["_id"])})
+                if not scan:
+                    # Admins can view any scan
+                    if u.get("is_admin"):
+                        scan = await db.scans.find_one({"_id": scan_id})
+                if scan:
+                    return scan
+    raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+
 @router.get("/scans/{scan_id}/report/html", response_class=HTMLResponse)
-async def report_html(scan_id: str, user=Depends(get_current_user)):
+async def report_html(
+    scan_id: str,
+    token: Optional[str] = Query(default=None),
+    user=Depends(get_current_user),
+):
     from reporting.reporter import Reporter
-    return Reporter(_scan_to_result(await _owned(scan_id, str(user["_id"])))).export_html_str()
+    # Bearer token auth (API calls)
+    try:
+        scan = await _owned(scan_id, str(user["_id"]))
+    except Exception:
+        # Fallback: query param token (browser tab)
+        scan = await _get_report_scan(scan_id, token)
+    return Reporter(_scan_to_result(scan)).export_html_str()
 
 
 @router.get("/scans/{scan_id}/report/markdown", response_class=PlainTextResponse)
-async def report_markdown(scan_id: str, user=Depends(get_current_user)):
+async def report_markdown(
+    scan_id: str,
+    token: Optional[str] = Query(default=None),
+    user=Depends(get_current_user),
+):
     from reporting.reporter import Reporter
-    return Reporter(_scan_to_result(await _owned(scan_id, str(user["_id"])))).export_markdown_str()
+    try:
+        scan = await _owned(scan_id, str(user["_id"]))
+    except Exception:
+        scan = await _get_report_scan(scan_id, token)
+    return Reporter(_scan_to_result(scan)).export_markdown_str()
 
 
 @router.get("/scans/{scan_id}/report/json")
-async def report_json(scan_id: str, user=Depends(get_current_user)):
+async def report_json(
+    scan_id: str,
+    token: Optional[str] = Query(default=None),
+    user=Depends(get_current_user),
+):
     from reporting.reporter import Reporter
-    return Reporter(_scan_to_result(await _owned(scan_id, str(user["_id"])))).export_json_dict()
+    try:
+        scan = await _owned(scan_id, str(user["_id"]))
+    except Exception:
+        scan = await _get_report_scan(scan_id, token)
+    return Reporter(_scan_to_result(scan)).export_json_dict()
 
 
 @router.post("/reports/diff", response_model=DiffResult)
