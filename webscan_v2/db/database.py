@@ -10,6 +10,7 @@ import logging
 import certifi
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from pymongo import ASCENDING, DESCENDING
+from pymongo.errors import ServerSelectionTimeoutError
 
 log = logging.getLogger(__name__)
 
@@ -35,11 +36,23 @@ async def connect_db() -> None:
         client_options["tlsAllowInvalidCertificates"] = False
         client_options["tlsCAFile"] = certifi.where()
         client_options["tlsAllowInvalidHostnames"] = False
+        # Some hosting networks block OCSP endpoint checks, which can surface
+        # as opaque TLS handshake errors. Allow override through env var.
+        disable_ocsp = os.getenv("MONGODB_DISABLE_OCSP_CHECK", "true").lower() in {"1", "true", "yes"}
+        client_options["tlsDisableOCSPEndpointCheck"] = disable_ocsp
 
     _client = AsyncIOMotorClient(url, **client_options)
     _db = _client[db_name]
     # Validate connection
-    await _client.admin.command("ping")
+    try:
+        await _client.admin.command("ping")
+    except ServerSelectionTimeoutError as exc:
+        log.error("MongoDB connection failed: %s", exc)
+        hint = (
+            "MongoDB connection failed. Verify Render outbound connectivity, Atlas IP allowlist, "
+            "correct credentials, and try MONGODB_DISABLE_OCSP_CHECK=true for restrictive networks."
+        )
+        raise RuntimeError(hint) from exc
     # Indexes
     await _db.users.create_index([("username", ASCENDING)], unique=True)
     await _db.users.create_index([("email", ASCENDING)], unique=True)
