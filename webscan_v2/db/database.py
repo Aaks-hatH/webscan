@@ -18,6 +18,10 @@ _client: AsyncIOMotorClient | None = None
 _db: AsyncIOMotorDatabase | None = None
 
 
+def _env_flag(name: str, default: str = "false") -> bool:
+    return os.getenv(name, default).strip().lower() in {"1", "true", "yes", "on"}
+
+
 async def connect_db() -> None:
     global _client, _db
     url = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
@@ -38,6 +42,7 @@ async def connect_db() -> None:
         client_options["tlsAllowInvalidHostnames"] = False
         # Some hosting networks block OCSP endpoint checks, which can surface
         # as opaque TLS handshake errors. Allow override through env var.
+        disable_ocsp = _env_flag("MONGODB_DISABLE_OCSP_CHECK", "true")
         disable_ocsp = os.getenv("MONGODB_DISABLE_OCSP_CHECK", "true").lower() in {"1", "true", "yes"}
         client_options["tlsDisableOCSPEndpointCheck"] = disable_ocsp
 
