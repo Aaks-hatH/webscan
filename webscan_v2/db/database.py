@@ -1,8 +1,5 @@
 """
 db/database.py — Async MongoDB client via Motor.
-
-Set MONGODB_URL in your environment (.env for local, Render env vars for prod).
-Free MongoDB Atlas cluster: https://www.mongodb.com/atlas/database
 """
 
 import os
@@ -18,59 +15,48 @@ _client: AsyncIOMotorClient | None = None
 _db: AsyncIOMotorDatabase | None = None
 
 
-def _env_flag(name: str, default: str = "false") -> bool:
-    return os.getenv(name, default).strip().lower() in {"1", "true", "yes", "on"}
-
-
 async def connect_db() -> None:
     global _client, _db
-    url = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
+    url     = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
     db_name = os.getenv("DB_NAME", "webscan")
 
-    client_options = {
-        "serverSelectionTimeoutMS": 5000,
+    client_options: dict = {
+        "serverSelectionTimeoutMS": 10000,
         "connectTimeoutMS": 20000,
         "socketTimeoutMS": 20000,
     }
 
-    # Atlas deployments can fail TLS handshakes in minimal containers when the
-    # system CA bundle is unavailable. Explicitly provide certifi's CA store.
+    # Atlas (mongodb+srv) needs TLS with a trusted CA bundle.
+    # Do NOT mix tlsAllowInvalidCertificates with tlsDisableOCSPEndpointCheck —
+    # pymongo raises InvalidURI if both are set.
     if url.startswith("mongodb+srv://") or "mongodb.net" in url:
-        client_options["tls"] = True
-        client_options["tlsAllowInvalidCertificates"] = False
+        client_options["tls"]       = True
         client_options["tlsCAFile"] = certifi.where()
-        client_options["tlsAllowInvalidHostnames"] = False
-        # Some hosting networks block OCSP endpoint checks, which can surface
-        # as opaque TLS handshake errors. Allow override through env var.
-        disable_ocsp = _env_flag("MONGODB_DISABLE_OCSP_CHECK", "true")
-        disable_ocsp = os.getenv("MONGODB_DISABLE_OCSP_CHECK", "true").lower() in {"1", "true", "yes"}
-        client_options["tlsDisableOCSPEndpointCheck"] = disable_ocsp
 
     _client = AsyncIOMotorClient(url, **client_options)
-    _db = _client[db_name]
-    # Validate connection
+    _db     = _client[db_name]
+
     try:
         await _client.admin.command("ping")
     except ServerSelectionTimeoutError as exc:
         log.error("MongoDB connection failed: %s", exc)
-        hint = (
-            "MongoDB connection failed. Verify Render outbound connectivity, Atlas IP allowlist, "
-            "correct credentials, and try MONGODB_DISABLE_OCSP_CHECK=true for restrictive networks."
-        )
-        raise RuntimeError(hint) from exc
-    # Indexes
+        raise RuntimeError(
+            "Cannot reach MongoDB. Check your MONGODB_URL, Atlas IP allowlist "
+            "(add 0.0.0.0/0 for Render), and that your password has no special "
+            "characters that need URL-encoding."
+        ) from exc
+
     await _db.users.create_index([("username", ASCENDING)], unique=True)
-    await _db.users.create_index([("email", ASCENDING)], unique=True)
-    await _db.scans.create_index([("user_id", ASCENDING)])
+    await _db.users.create_index([("email",    ASCENDING)], unique=True)
+    await _db.scans.create_index([("user_id",  ASCENDING)])
     await _db.scans.create_index([("created_at", DESCENDING)])
-    log.info("MongoDB connected: %s / %s", url.split("@")[-1], db_name)
+    log.info("MongoDB connected to %s", url.split("@")[-1])
 
 
 async def close_db() -> None:
     global _client
     if _client:
         _client.close()
-        log.info("MongoDB connection closed")
 
 
 def get_db() -> AsyncIOMotorDatabase:
