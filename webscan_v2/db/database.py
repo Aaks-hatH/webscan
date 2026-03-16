@@ -7,6 +7,7 @@ Free MongoDB Atlas cluster: https://www.mongodb.com/atlas/database
 
 import os
 import logging
+import certifi
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from pymongo import ASCENDING, DESCENDING
 
@@ -20,7 +21,22 @@ async def connect_db() -> None:
     global _client, _db
     url = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
     db_name = os.getenv("DB_NAME", "webscan")
-    _client = AsyncIOMotorClient(url, serverSelectionTimeoutMS=5000)
+
+    client_options = {
+        "serverSelectionTimeoutMS": 5000,
+        "connectTimeoutMS": 20000,
+        "socketTimeoutMS": 20000,
+    }
+
+    # Atlas deployments can fail TLS handshakes in minimal containers when the
+    # system CA bundle is unavailable. Explicitly provide certifi's CA store.
+    if url.startswith("mongodb+srv://") or "mongodb.net" in url:
+        client_options["tls"] = True
+        client_options["tlsAllowInvalidCertificates"] = False
+        client_options["tlsCAFile"] = certifi.where()
+        client_options["tlsAllowInvalidHostnames"] = False
+
+    _client = AsyncIOMotorClient(url, **client_options)
     _db = _client[db_name]
     # Validate connection
     await _client.admin.command("ping")
