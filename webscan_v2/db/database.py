@@ -37,11 +37,13 @@ async def connect_db() -> None:
     # system CA bundle is unavailable. Explicitly provide certifi's CA store.
     if url.startswith("mongodb+srv://") or "mongodb.net" in url:
         client_options["tls"] = True
+        client_options["tlsAllowInvalidCertificates"] = False
         client_options["tlsCAFile"] = certifi.where()
         client_options["tlsAllowInvalidHostnames"] = False
         # Some hosting networks block OCSP endpoint checks, which can surface
         # as opaque TLS handshake errors. Allow override through env var.
         disable_ocsp = _env_flag("MONGODB_DISABLE_OCSP_CHECK", "true")
+        disable_ocsp = os.getenv("MONGODB_DISABLE_OCSP_CHECK", "true").lower() in {"1", "true", "yes"}
         client_options["tlsDisableOCSPEndpointCheck"] = disable_ocsp
 
     _client = AsyncIOMotorClient(url, **client_options)
