@@ -18,7 +18,7 @@ from urllib.parse import urljoin, urlparse, parse_qs, urlunparse
 import httpx
 from bs4 import BeautifulSoup
 
-from webscan_v2.config import DEFAULT_TIMEOUT, DEFAULT_DELAY, USER_AGENT
+from config import DEFAULT_TIMEOUT, DEFAULT_DELAY, USER_AGENT
 
 log = logging.getLogger(__name__)
 
