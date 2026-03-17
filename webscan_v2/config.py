@@ -252,18 +252,63 @@ PROFILES: dict[str, dict] = {
     },
     "api": {
         "description": "API-focused: JSON endpoints, headers, no HTML form tests",
-        "run_xss":        True,
-        "run_sqli":       True,
-        "run_blind_sqli": False,
-        "run_stored_xss": False,
-        "run_csrf":       False,
-        "run_idor":       True,
-        "run_headers":    True,
-        "run_redirects":  True,
-        "run_exposure":   True,
-        "run_info_leak":  True,
-        "run_api_fuzz":   True,
+        "run_xss":             True,
+        "run_sqli":            True,
+        "run_blind_sqli":      False,
+        "run_stored_xss":      False,
+        "run_csrf":            False,
+        "run_idor":            True,
+        "run_headers":         True,
+        "run_redirects":       True,
+        "run_exposure":        True,
+        "run_info_leak":       True,
+        "run_api_fuzz":        True,
+        "run_path_bruteforce": True,
+        "run_jwt_analysis":    True,
+        "run_tech_fingerprint":True,
+        "run_js_secrets":      True,
+        "run_admin_probe":     True,
+    },
+    "pentest": {
+        "description": "Full pentest mode — admin bypass, JWT attacks, secret extraction, all checks",
+        "run_xss":             True,
+        "run_sqli":            True,
+        "run_blind_sqli":      True,
+        "run_stored_xss":      True,
+        "run_csrf":            True,
+        "run_idor":            True,
+        "run_headers":         True,
+        "run_redirects":       True,
+        "run_exposure":        True,
+        "run_info_leak":       True,
+        "run_api_fuzz":        True,
+        "run_path_bruteforce": True,
+        "run_jwt_analysis":    True,
+        "run_tech_fingerprint":True,
+        "run_js_secrets":      True,
+        "run_admin_probe":     True,
     },
 }
+
+# ── Backfill new flags into existing profiles ─────────────────────────────────
+_NEW_FLAG_DEFAULTS = {
+    "run_path_bruteforce":  False,
+    "run_jwt_analysis":     False,
+    "run_tech_fingerprint": False,
+    "run_js_secrets":       False,
+    "run_admin_probe":      False,
+}
+for _pname, _pdata in PROFILES.items():
+    for _flag, _default in _NEW_FLAG_DEFAULTS.items():
+        _pdata.setdefault(_flag, _default)
+# Enable passive new checks on standard + full
+for _pname in ("standard", "full"):
+    PROFILES[_pname].update({
+        "run_path_bruteforce":  True,
+        "run_jwt_analysis":     True,
+        "run_tech_fingerprint": True,
+        "run_js_secrets":       True,
+        "run_admin_probe":      False,  # Opt-in only via pentest profile
+    })
 
 SEVERITY_ORDER = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3, "INFO": 4}
