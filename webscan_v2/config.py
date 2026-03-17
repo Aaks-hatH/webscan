@@ -77,10 +77,12 @@ def get_browser_headers(url: str = "") -> dict:
 
 # ── XSS probes ────────────────────────────────────────────────────────────────
 XSS_PROBES = [
-    '<wbr id="xss-probe-1">',
-    '"xss-probe-2"',
-    "xss-probe-3'",
-    "<img/src=x id=xss-probe-4>",
+    'wsxss1<wbr id="wsxss1">',
+    "wsxss2'wsxss2",
+    'wsxss3"wsxss3',
+    "<wsxss4>",
+    "<script>wsxss5</script>",
+    "wsxss6<img src=x onerror=wsxss6>",
 ]
 STORED_XSS_PROBE_TEMPLATE = 'wscan-stored-{uid}'   # uid = 8-char hex
 
@@ -153,11 +155,13 @@ DANGEROUS_HEADERS = {
 }
 
 # ── Open redirect ─────────────────────────────────────────────────────────────
-REDIRECT_PAYLOADS = ["https://evil.example.com", "//evil.example.com"]
+REDIRECT_PAYLOADS = ["https://evil.example.com", "//evil.example.com", "https://evil.example.com/", "/\\evil.example.com", "https:evil.example.com"]
 REDIRECT_PARAMS   = [
     "redirect", "redirect_to", "redirect_url", "url", "next",
     "return", "return_url", "goto", "dest", "destination",
     "redir", "r", "out", "jump", "link", "target",
+    "callback", "cb", "continue", "forward", "location",
+    "to", "page", "view", "path", "from", "back",
 ]
 
 # ── Sensitive paths ───────────────────────────────────────────────────────────
@@ -167,9 +171,18 @@ SENSITIVE_PATHS = [
     "/config.yml", "/config.yaml", "/config.json", "/settings.py",
     "/local_settings.py", "/database.yml", "/package.json",
     "/web.config", "/phpinfo.php", "/info.php", "/test.php",
-    "/backup.sql", "/dump.sql", "/db.sql", "/robots.txt",
+    "/backup.sql", "/dump.sql", "/db.sql", "/backup.sql.gz",
     "/server-status", "/.DS_Store", "/.svn/entries",
     "/.bash_history", "/id_rsa", "/id_dsa",
+    # API endpoints
+    "/api/config", "/api/v1/config", "/api/health", "/api/v1/health",
+    "/api/admin/users", "/api/v1/admin/users", "/api/users", "/api/v1/users",
+    # Common debug/admin
+    "/debug", "/trace", "/console", "/actuator", "/actuator/env",
+    "/actuator/health", "/metrics", "/admin", "/admin/", "/status",
+    # Common secrets
+    "/secrets.json", "/credentials.json", "/.aws/credentials",
+    "/swagger.json", "/openapi.json", "/api/openapi.json",
 ]
 
 # ── Info leak patterns ────────────────────────────────────────────────────────
@@ -216,7 +229,7 @@ PROFILES: dict[str, dict] = {
         "run_blind_sqli": False,
         "run_stored_xss": True,
         "run_csrf":       True,
-        "run_idor":       False,
+        "run_idor":       True,
         "run_headers":    True,
         "run_redirects":  True,
         "run_exposure":   True,
