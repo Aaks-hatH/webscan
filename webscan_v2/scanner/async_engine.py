@@ -1,12 +1,11 @@
 """
-scanner/async_engine.py — Full async scan pipeline orchestrator.
+scanner/async_engine.py — Full async scan pipeline with API discovery.
 
-Architecture
-------------
-All I/O runs inside a single httpx.AsyncClient, shared by the crawler and
-every detector. A semaphore on the crawler limits concurrency. Detection
-tasks are gathered in parallel per page/vector. Progress is pushed to an
-asyncio.Queue that the WebSocket handler drains in real time.
+New in this version:
+  - SPA detection before file exposure (eliminates false positives)
+  - JS bundle parsing to discover API endpoints
+  - OpenAPI/Swagger auto-import
+  - API fuzzing (auth enforcement, error disclosure, mass assignment)
 """
 
 import asyncio
@@ -32,10 +31,12 @@ from detection.stored_xss import StoredXSSDetector
 from detection.blind_sqli import BlindSQLiDetector
 from detection.csrf_detector import CSRFDetector
 from detection.idor_detector import IDORDetector
+from detection.spa_detector import SPADetector
+from detection.api_fuzzer import APIFuzzer, OpenAPIImporter
 from discovery.input_discovery import InputDiscovery
+from discovery.js_extractor import JSEndpointExtractor
 
 log = logging.getLogger(__name__)
-
 warnings.filterwarnings("ignore", message="Unverified HTTPS request")
 
 
@@ -45,6 +46,7 @@ class ScanResult:
     duration_s:    float
     pages_crawled: int
     input_vectors: int
+    api_endpoints: int = 0
     findings:      list[dict] = field(default_factory=list)
     errors:        list[str]  = field(default_factory=list)
 
@@ -52,7 +54,6 @@ class ScanResult:
 class AsyncScannerEngine:
     def __init__(self, config: ScanConfig):
         self.config = config
-        # Merge profile defaults with per-scan overrides
         profile_defaults = PROFILES.get(config.profile, PROFILES["standard"]).copy()
         for key, val in config.model_dump().items():
             if key.startswith("run_") and val is not None:
@@ -72,12 +73,31 @@ class AsyncScannerEngine:
         ) as client:
             findings: list[Finding] = []
             errors:   list[str]     = []
+            origin = _origin(self.config.target)
 
-            # ── Phase 1: Crawl ────────────────────────────────────────────────
-            await progress.put({
-                "type": "phase",
-                "data": {"phase": "crawling", "message": f"Crawling {self.config.target}…"},
-            })
+            # ── Phase 1: SPA Detection ────────────────────────────────────────
+            await progress.put({"type": "phase", "data": {
+                "phase": "spa_detect",
+                "message": f"Analysing target architecture…",
+            }})
+            spa_det     = SPADetector(client)
+            spa_profile = await spa_det.detect(origin)
+            if spa_profile.is_spa:
+                await progress.put({"type": "progress", "data": {
+                    "phase": "spa_detect",
+                    "message": f"SPA detected ({spa_profile.framework_hint}) — file exposure false-positive filtering enabled",
+                }})
+            else:
+                await progress.put({"type": "progress", "data": {
+                    "phase": "spa_detect",
+                    "message": "Traditional server-side app detected",
+                }})
+
+            # ── Phase 2: Crawl ────────────────────────────────────────────────
+            await progress.put({"type": "phase", "data": {
+                "phase": "crawling",
+                "message": f"Crawling {self.config.target}…",
+            }})
 
             crawler = AsyncCrawler(
                 root_url  = self.config.target,
@@ -85,125 +105,183 @@ class AsyncScannerEngine:
                 max_pages = self.config.max_pages,
                 delay     = self.config.delay,
             )
-
             pages_so_far = 0
 
             async def on_page(page: PageResult):
                 nonlocal pages_so_far
                 pages_so_far += 1
-                await progress.put({
-                    "type": "progress",
-                    "data": {
-                        "phase": "crawling",
-                        "current": pages_so_far,
-                        "message": f"Crawled: {page.url}",
-                    },
-                })
+                await progress.put({"type": "progress", "data": {
+                    "phase": "crawling",
+                    "current": pages_so_far,
+                    "message": f"Crawled: {page.url}",
+                }})
 
-            pages = await crawler.crawl(on_page=on_page)
+            pages       = await crawler.crawl(on_page=on_page)
             valid_pages = [p for p in pages if not p.error]
+            await progress.put({"type": "progress", "data": {
+                "phase": "crawling",
+                "message": f"Crawl complete — {len(valid_pages)} pages",
+            }})
 
-            await progress.put({
-                "type": "progress",
-                "data": {"phase": "crawling", "message": f"Crawl complete — {len(valid_pages)} pages"},
-            })
-
-            # ── Phase 2: Input discovery ──────────────────────────────────────
-            await progress.put({
-                "type": "phase",
-                "data": {"phase": "discovery", "message": "Discovering input vectors…"},
-            })
+            # ── Phase 3: Input discovery (HTML forms + query params) ──────────
+            await progress.put({"type": "phase", "data": {
+                "phase": "discovery",
+                "message": "Discovering HTML input vectors…",
+            }})
             surface = InputDiscovery(pages).run()
             vectors = surface.all_vectors
+            await progress.put({"type": "progress", "data": {
+                "phase": "discovery",
+                "message": f"Found {len(vectors)} HTML input vectors",
+            }})
 
-            await progress.put({
-                "type": "progress",
-                "data": {
-                    "phase": "discovery",
-                    "message": f"Found {len(vectors)} input vectors across {len(valid_pages)} pages",
-                },
-            })
+            # ── Phase 4: API discovery (JS bundles + OpenAPI) ─────────────────
+            await progress.put({"type": "phase", "data": {
+                "phase": "api_discovery",
+                "message": "Extracting API endpoints from JS bundles…",
+            }})
 
-            # ── Phase 3: Header checks ────────────────────────────────────────
+            # Try OpenAPI first (most accurate)
+            openapi_importer = OpenAPIImporter(client, origin)
+            api_vectors      = await openapi_importer.discover()
+
+            if api_vectors:
+                await progress.put({"type": "progress", "data": {
+                    "phase": "api_discovery",
+                    "message": f"OpenAPI spec found — {len(api_vectors)} documented endpoints",
+                }})
+            else:
+                # Fall back to JS bundle extraction
+                js_extractor = JSEndpointExtractor(client, origin)
+                js_result    = await js_extractor.run(valid_pages)
+                api_vectors  = js_extractor.to_input_vectors(js_result)
+
+                if js_result.base_urls:
+                    await progress.put({"type": "progress", "data": {
+                        "phase": "api_discovery",
+                        "message": f"Base URLs detected: {js_result.base_urls[:3]}",
+                    }})
+
+                await progress.put({"type": "progress", "data": {
+                    "phase": "api_discovery",
+                    "message": (
+                        f"JS extraction complete — "
+                        f"{len(js_result.js_files)} bundles parsed, "
+                        f"{len(api_vectors)} API endpoints discovered"
+                    ),
+                }})
+
+            # Merge: HTML vectors + API vectors
+            all_vectors = vectors + api_vectors
+
+            # ── Phase 5: Security headers ─────────────────────────────────────
             if self._flags.get("run_headers"):
-                await progress.put({
-                    "type": "phase",
-                    "data": {"phase": "headers", "message": "Checking security headers…"},
-                })
+                await progress.put({"type": "phase", "data": {
+                    "phase": "headers",
+                    "message": "Checking security headers…",
+                }})
                 checker = HeaderChecker()
                 seen_origins: set[str] = set()
                 for page in valid_pages:
-                    origin = _origin(page.url)
-                    if origin not in seen_origins:
-                        seen_origins.add(origin)
-                        new_findings = checker.check_page(page)
-                        for f in new_findings:
+                    o = _origin(page.url)
+                    if o not in seen_origins:
+                        seen_origins.add(o)
+                        for f in checker.check_page(page):
                             findings.append(f)
                             await _emit_finding(progress, f)
 
-            # ── Phase 4: CSRF checks ──────────────────────────────────────────
+            # ── Phase 6: CSRF ─────────────────────────────────────────────────
             if self._flags.get("run_csrf"):
-                await progress.put({
-                    "type": "phase",
-                    "data": {"phase": "csrf", "message": "Checking for CSRF protection…"},
-                })
+                await progress.put({"type": "phase", "data": {
+                    "phase": "csrf", "message": "Checking for CSRF protection…",
+                }})
                 csrf_det = CSRFDetector()
                 for page in valid_pages:
                     for f in csrf_det.check_page(page):
                         findings.append(f)
                         await _emit_finding(progress, f)
 
-            # ── Phase 5: Info leak & file exposure ────────────────────────────
+            # ── Phase 7: Info leak ────────────────────────────────────────────
             if self._flags.get("run_info_leak"):
-                await progress.put({
-                    "type": "phase",
-                    "data": {"phase": "info_leak", "message": "Scanning for data leaks…"},
-                })
+                await progress.put({"type": "phase", "data": {
+                    "phase": "info_leak", "message": "Scanning for data leaks…",
+                }})
                 leak_det = InfoLeakDetector()
                 for page in valid_pages:
                     for f in leak_det.check_page(page):
                         findings.append(f)
                         await _emit_finding(progress, f)
 
+            # ── Phase 8: File exposure (with SPA filter) ──────────────────────
             if self._flags.get("run_exposure"):
-                await progress.put({
-                    "type": "phase",
-                    "data": {"phase": "exposure", "message": "Probing for exposed files…"},
-                })
-                origin     = _origin(self.config.target)
-                exp_det    = ConfigExposureDetector(client, origin)
-                exp_finds  = await exp_det.run()
-                for f in exp_finds:
+                await progress.put({"type": "phase", "data": {
+                    "phase": "exposure",
+                    "message": "Probing for exposed files"
+                    + (" (SPA filter active)" if spa_profile.is_spa else "") + "…",
+                }})
+                exp_det = ConfigExposureDetector(client, origin, spa_profile=spa_profile)
+                for f in await exp_det.run():
                     findings.append(f)
                     await _emit_finding(progress, f)
 
-            # ── Phase 6: Stored XSS (two-phase) ──────────────────────────────
+            # ── Phase 9: Stored XSS ───────────────────────────────────────────
             if self._flags.get("run_stored_xss"):
-                await progress.put({
-                    "type": "phase",
-                    "data": {"phase": "stored_xss", "message": "Testing for stored XSS…"},
-                })
-                stored_det = StoredXSSDetector(client)
-                for f in await stored_det.run(valid_pages):
+                await progress.put({"type": "phase", "data": {
+                    "phase": "stored_xss", "message": "Testing for stored XSS…",
+                }})
+                for f in await StoredXSSDetector(client).run(valid_pages):
                     findings.append(f)
                     await _emit_finding(progress, f)
 
-            # ── Phase 7: Per-vector detection (parallel batches) ──────────────
-            if vectors:
-                await progress.put({
-                    "type": "phase",
-                    "data": {
-                        "phase": "fuzzing",
-                        "total": len(vectors),
-                        "message": f"Fuzzing {len(vectors)} input vectors…",
-                    },
-                })
+            # ── Phase 10: API fuzzing ─────────────────────────────────────────
+            if api_vectors and self._flags.get("run_api_fuzz", True):
+                await progress.put({"type": "phase", "data": {
+                    "phase": "api_fuzz",
+                    "total": len(api_vectors),
+                    "message": f"Fuzzing {len(api_vectors)} API endpoints…",
+                }})
+                api_fuzzer = APIFuzzer(client, origin)
+                api_sem    = asyncio.Semaphore(5)
 
-                xss_det   = XSSDetector(client)      if self._flags.get("run_xss")       else None
-                sqli_det  = SQLiDetector(client)     if self._flags.get("run_sqli")      else None
-                blind_det = BlindSQLiDetector(client)if self._flags.get("run_blind_sqli")else None
-                redir_det = RedirectDetector(client) if self._flags.get("run_redirects") else None
-                idor_det  = IDORDetector(client)     if self._flags.get("run_idor")      else None
+                async def fuzz_one(idx: int, vec):
+                    async with api_sem:
+                        local: list[Finding] = []
+                        try:
+                            local = await api_fuzzer.test_endpoint(vec)
+                        except Exception as exc:
+                            errors.append(f"API fuzz error [{vec.url}]: {exc}")
+                        await progress.put({"type": "progress", "data": {
+                            "phase": "api_fuzz",
+                            "current": idx + 1,
+                            "total": len(api_vectors),
+                            "message": f"[{idx+1}/{len(api_vectors)}] API: {vec.url}",
+                            "new_findings": len(local),
+                        }})
+                        return local
+
+                api_results = await asyncio.gather(
+                    *[fuzz_one(i, v) for i, v in enumerate(api_vectors)],
+                    return_exceptions=True,
+                )
+                for r in api_results:
+                    if isinstance(r, list):
+                        for f in r:
+                            findings.append(f)
+                            await _emit_finding(progress, f)
+
+            # ── Phase 11: HTML input fuzzing (XSS, SQLi, redirects, IDOR) ─────
+            if all_vectors:
+                await progress.put({"type": "phase", "data": {
+                    "phase": "fuzzing",
+                    "total": len(all_vectors),
+                    "message": f"Fuzzing {len(all_vectors)} total input vectors…",
+                }})
+
+                xss_det   = XSSDetector(client)       if self._flags.get("run_xss")        else None
+                sqli_det  = SQLiDetector(client)      if self._flags.get("run_sqli")       else None
+                blind_det = BlindSQLiDetector(client) if self._flags.get("run_blind_sqli") else None
+                redir_det = RedirectDetector(client)  if self._flags.get("run_redirects")  else None
+                idor_det  = IDORDetector(client)      if self._flags.get("run_idor")       else None
 
                 sem = asyncio.Semaphore(8)
 
@@ -217,7 +295,6 @@ class AsyncScannerEngine:
                             if blind_det: tasks.append(blind_det.test_vector(vector))
                             if redir_det: tasks.append(redir_det.test_vector(vector))
                             if idor_det:  tasks.append(idor_det.test_vector(vector))
-
                             results = await asyncio.gather(*tasks, return_exceptions=True)
                             for r in results:
                                 if isinstance(r, list):
@@ -225,20 +302,17 @@ class AsyncScannerEngine:
                         except Exception as exc:
                             errors.append(f"Vector error [{vector.url}:{vector.param_name}]: {exc}")
 
-                        await progress.put({
-                            "type": "progress",
-                            "data": {
-                                "phase": "fuzzing",
-                                "current": idx + 1,
-                                "total": len(vectors),
-                                "message": f"[{idx+1}/{len(vectors)}] {vector.method} {vector.url} [{vector.param_name}]",
-                                "new_findings": len(local_findings),
-                            },
-                        })
+                        await progress.put({"type": "progress", "data": {
+                            "phase": "fuzzing",
+                            "current": idx + 1,
+                            "total": len(all_vectors),
+                            "message": f"[{idx+1}/{len(all_vectors)}] {vector.method} {vector.url} [{vector.param_name}]",
+                            "new_findings": len(local_findings),
+                        }})
                         return local_findings
 
                 batch_results = await asyncio.gather(
-                    *[test_one(i, v) for i, v in enumerate(vectors)],
+                    *[test_one(i, v) for i, v in enumerate(all_vectors)],
                     return_exceptions=True,
                 )
                 for r in batch_results:
@@ -249,18 +323,16 @@ class AsyncScannerEngine:
 
         # ── Finalise ──────────────────────────────────────────────────────────
         findings = _dedup_and_sort(findings)
-
         return ScanResult(
             target        = self.config.target,
             duration_s    = round(time.monotonic() - t0, 2),
             pages_crawled = len(valid_pages),
-            input_vectors = len(vectors),
+            input_vectors = len(all_vectors),
+            api_endpoints = len(api_vectors),
             findings      = [f.to_dict() for f in findings],
             errors        = errors,
         )
 
-
-# ── Helpers ───────────────────────────────────────────────────────────────────
 
 async def _emit_finding(q: asyncio.Queue, f: Finding) -> None:
     await q.put({"type": "finding", "data": f.to_dict()})
