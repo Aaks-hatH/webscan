@@ -18,7 +18,7 @@ from urllib.parse import urljoin, urlparse, parse_qs, urlunparse
 import httpx
 from bs4 import BeautifulSoup
 
-from config import DEFAULT_TIMEOUT, DEFAULT_DELAY, USER_AGENT
+from config import DEFAULT_TIMEOUT, DEFAULT_DELAY, USER_AGENT, get_browser_headers
 
 log = logging.getLogger(__name__)
 
@@ -84,11 +84,10 @@ class AsyncCrawler:
         BFS crawl. `on_page` is an optional async callback(PageResult) for
         live progress reporting.
         """
-        headers = {"User-Agent": USER_AGENT}
         limits  = httpx.Limits(max_connections=MAX_CONCURRENCY, max_keepalive_connections=10)
 
         async with httpx.AsyncClient(
-            headers=headers,
+            headers=get_browser_headers(self.root_url),
             timeout=self.timeout,
             verify=False,
             follow_redirects=True,
