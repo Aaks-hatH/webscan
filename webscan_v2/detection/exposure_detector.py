@@ -1,4 +1,5 @@
-"""detection/exposure_detector.py"""
+"""detection/exposure_detector.py — with SPA false-positive filtering."""
+import hashlib
 import logging
 import re
 from typing import Optional
@@ -11,21 +12,37 @@ from crawler.async_crawler import PageResult
 from detection.finding import Finding
 
 log = logging.getLogger(__name__)
-
 _EXISTS = {200, 206}
 
 
 class ConfigExposureDetector:
-    def __init__(self, client: httpx.AsyncClient, origin: str, timeout: int = DEFAULT_TIMEOUT):
-        self.client  = client
-        self.origin  = origin
-        self.timeout = timeout
+    def __init__(
+        self,
+        client: httpx.AsyncClient,
+        origin: str,
+        timeout: int = DEFAULT_TIMEOUT,
+        spa_profile=None,
+    ):
+        self.client      = client
+        self.origin      = origin
+        self.timeout     = timeout
+        self.spa_profile = spa_profile
 
     async def run(self) -> list[Finding]:
         import asyncio
         tasks = [self._probe(urljoin(self.origin, p), p) for p in SENSITIVE_PATHS]
         results = await asyncio.gather(*tasks, return_exceptions=True)
         return [r for r in results if isinstance(r, Finding)]
+
+    def _is_spa_false_positive(self, body: str, size: int) -> bool:
+        if not self.spa_profile or not self.spa_profile.is_spa:
+            return False
+        if abs(size - self.spa_profile.baseline_size) < 2048:
+            if hashlib.md5(body.encode()).hexdigest() == self.spa_profile.baseline_hash:
+                return True
+            if body[:80].strip().lower().startswith("<!doctype html"):
+                return True
+        return False
 
     async def _probe(self, url: str, path: str) -> Optional[Finding]:
         try:
@@ -35,6 +52,11 @@ class ConfigExposureDetector:
             return None
 
         if resp.status_code not in _EXISTS or len(resp.text.strip()) < 20:
+            return None
+
+        # KEY FIX: filter SPA catch-all false positives
+        if self._is_spa_false_positive(resp.text, len(resp.text)):
+            log.debug("SPA false positive suppressed: %s", url)
             return None
 
         sev = _sev(path)
@@ -69,7 +91,7 @@ class InfoLeakDetector:
         for name, regex in self._compiled.items():
             m = regex.search(body)
             if m:
-                v = m.group(0)
+                v        = m.group(0)
                 redacted = v[:4] + "…[REDACTED]…" + v[-2:] if len(v) > 8 else "[REDACTED]"
                 findings.append(Finding(
                     vuln_type=f"Sensitive Data Exposure: {name}",
@@ -93,16 +115,16 @@ class InfoLeakDetector:
 
 
 def _sev(path: str) -> str:
-    if any(s in path for s in (".env", "id_rsa", "id_dsa", ".bash_history", "wp-config", "database.yml")):
+    if any(s in path for s in (".env","id_rsa","id_dsa",".bash_history","wp-config","database.yml")):
         return "CRITICAL"
-    if any(s in path for s in (".git/config", ".htpasswd", "settings.py", "backup.sql", "phpinfo")):
+    if any(s in path for s in (".git/config",".htpasswd","settings.py","backup.sql","phpinfo")):
         return "HIGH"
     return "MEDIUM"
 
 
 def _sev_leak(name: str) -> str:
-    if name in {"AWS Access Key", "Generic API Key", "Private Key"}:
+    if name in {"AWS Access Key","Generic API Key","Private Key"}:
         return "CRITICAL"
-    if name in {"Password in HTML", "JWT Token", "Basic Auth in URL"}:
+    if name in {"Password in HTML","JWT Token","Basic Auth in URL"}:
         return "HIGH"
     return "MEDIUM"
