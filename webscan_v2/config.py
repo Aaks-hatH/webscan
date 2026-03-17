@@ -7,11 +7,73 @@ DEFAULT_TIMEOUT   = 10
 DEFAULT_DELAY     = 0.3
 DEFAULT_MAX_DEPTH = 3
 DEFAULT_MAX_PAGES = 100
-USER_AGENT = (
-    "WebScan-Educational/2.0 "
-    "(authorized security testing; "
-    "github.com/Aaks-hatH/webscan)"
-)
+# ── Rotating realistic browser User-Agent pool ───────────────────────────────
+import random as _random
+
+_USER_AGENTS = [
+    # Chrome on Windows
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    # Chrome on macOS
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    # Chrome on Linux
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    # Firefox on Windows
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:131.0) Gecko/20100101 Firefox/131.0",
+    # Firefox on macOS
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14.7; rv:132.0) Gecko/20100101 Firefox/132.0",
+    # Safari on macOS
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15",
+    # Edge on Windows
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+    # Chrome on Android
+    "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.81 Mobile Safari/537.36",
+    "Mozilla/5.0 (Linux; Android 14; SM-S928B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.81 Mobile Safari/537.36",
+    # Safari on iPhone
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Mobile/15E148 Safari/604.1",
+]
+
+# Default UA for single-UA references
+USER_AGENT = _USER_AGENTS[0]
+
+
+def get_user_agent() -> str:
+    """Return a random realistic browser User-Agent string."""
+    return _random.choice(_USER_AGENTS)
+
+
+def get_browser_headers(url: str = "") -> dict:
+    """Full browser-like headers for a request to the given URL."""
+    ua         = get_user_agent()
+    is_firefox = "Firefox" in ua
+    is_safari  = "Safari" in ua and "Chrome" not in ua
+    accept = (
+        "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        if is_firefox or is_safari
+        else "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
+    )
+    headers = {
+        "User-Agent":                ua,
+        "Accept":                    accept,
+        "Accept-Language":           _random.choice(["en-US,en;q=0.9", "en-GB,en;q=0.9", "en-US,en;q=0.8"]),
+        "Accept-Encoding":           "gzip, deflate, br",
+        "Connection":                "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+        "Sec-Fetch-Dest":            "document",
+        "Sec-Fetch-Mode":            "navigate",
+        "Sec-Fetch-Site":            "none",
+        "Sec-Fetch-User":            "?1",
+    }
+    if url:
+        from urllib.parse import urlparse as _up
+        p = _up(url)
+        if p.path and p.path != "/":
+            headers["Referer"] = f"{p.scheme}://{p.netloc}/"
+    return headers
 
 # ── XSS probes ────────────────────────────────────────────────────────────────
 XSS_PROBES = [
