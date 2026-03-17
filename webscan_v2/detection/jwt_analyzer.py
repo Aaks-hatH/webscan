@@ -454,11 +454,15 @@ class JWTAnalyzer:
                     url, headers=headers,
                     timeout=self.timeout, follow_redirects=False,
                 )
-                # 200/201/204 = data returned = success
-                # 403 with JSON body suggesting "admin" role = endpoint exists, partial
-                if resp.status_code in (200, 201, 204):
-                    log.info("[JWT] Token accepted at %s (HTTP %d)", url, resp.status_code)
-                    return url, resp.status_code
+                if resp.status_code not in (200, 201, 204):
+                    continue
+                # Must be JSON — HTML means SPA catch-all, not a real API response
+                ct = resp.headers.get("content-type", "").lower()
+                if "html" in ct:
+                    continue
+                log.info("[JWT] Token accepted at %s (HTTP %d)", url, resp.status_code)
+                return url, resp.status_code
             except Exception as exc:
                 log.debug("[JWT] Probe error at %s: %s", url, exc)
         return None
+      
