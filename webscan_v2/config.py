@@ -10,7 +10,7 @@ DEFAULT_MAX_PAGES = 100
 USER_AGENT = (
     "WebScan-Educational/2.0 "
     "(authorized security testing; "
-    "github.com/your-org/webscan)"
+    "github.com/Aaks-hatH/webscan)"
 )
 
 # ── XSS probes ────────────────────────────────────────────────────────────────
@@ -145,6 +145,7 @@ PROFILES: dict[str, dict] = {
         "run_redirects":  False,
         "run_exposure":   True,
         "run_info_leak":  True,
+        "run_api_fuzz":   False,
     },
     "standard": {
         "description": "Full input testing excluding slow blind SQLi and IDOR",
@@ -158,6 +159,7 @@ PROFILES: dict[str, dict] = {
         "run_redirects":  True,
         "run_exposure":   True,
         "run_info_leak":  True,
+        "run_api_fuzz":   True,
     },
     "full": {
         "description": "Everything — slowest but most thorough",
@@ -171,6 +173,7 @@ PROFILES: dict[str, dict] = {
         "run_redirects":  True,
         "run_exposure":   True,
         "run_info_leak":  True,
+        "run_api_fuzz":   True,
     },
     "api": {
         "description": "API-focused: JSON endpoints, headers, no HTML form tests",
@@ -184,6 +187,7 @@ PROFILES: dict[str, dict] = {
         "run_redirects":  True,
         "run_exposure":   True,
         "run_info_leak":  True,
+        "run_api_fuzz":   True,
     },
 }
 
