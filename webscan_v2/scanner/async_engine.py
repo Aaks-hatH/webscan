@@ -19,7 +19,7 @@ from urllib.parse import urlparse
 import httpx
 
 from api.models import ScanConfig
-from config import PROFILES, SEVERITY_ORDER, USER_AGENT, DEFAULT_TIMEOUT
+from config import PROFILES, SEVERITY_ORDER, USER_AGENT, DEFAULT_TIMEOUT, get_browser_headers, get_user_agent
 from crawler.async_crawler import AsyncCrawler, PageResult
 from detection.finding import Finding
 from detection.header_checker import HeaderChecker
@@ -64,12 +64,18 @@ class AsyncScannerEngine:
         t0 = time.monotonic()
 
         client_limits = httpx.Limits(max_connections=20, max_keepalive_connections=10)
+
+        # Rotate User-Agent on every request via event hook
+        async def _rotate_ua(request):
+            request.headers["user-agent"] = get_user_agent()
+
         async with httpx.AsyncClient(
-            headers={"User-Agent": USER_AGENT},
+            headers=get_browser_headers(self.config.target),
             timeout=DEFAULT_TIMEOUT,
             verify=False,
             follow_redirects=True,
             limits=client_limits,
+            event_hooks={"request": [_rotate_ua]},
         ) as client:
             findings: list[Finding] = []
             errors:   list[str]     = []
