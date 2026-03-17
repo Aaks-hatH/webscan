@@ -802,6 +802,8 @@ table.tbl tbody tr:hover td { background: var(--s2); }
   border-radius: 50%;
   animation: sp .6s linear infinite;
   flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
 }
 @keyframes sp { to { transform: rotate(360deg); } }
 .loading { display: flex; align-items: center; gap: 9px; color: var(--t2); font-family: var(--fm); font-size: .8rem; padding: 36px 0; }
@@ -1086,7 +1088,7 @@ function scanRow(s) {
   var meta = rel(s.created_at) + ' &middot; ' + s.profile;
   if (s.username) meta += ' &middot; ' + esc(s.username);
   meta += ' &middot; ' + ((s.summary && s.summary.pages_crawled) || 0) + 'p';
-  return '<div class="scan-row" onclick="go('scan-detail',{id:'' + s.id + ''})"><div class="scan-dot ' + ({complete:'dot-c',running:'dot-r',pending:'dot-p',error:'dot-e'}[s.status]||'dot-p') + '"></div><div class="scan-info"><div class="scan-url">' + esc(s.target) + '</div><div class="scan-meta">' + meta + '</div></div>' + chips + pill(s.status) + '</div>';
+  return '<div class="scan-row" onclick="go(\'scan-detail\',{id:\'' + s.id + '\'})"><div class="scan-dot ' + ({complete:'dot-c',running:'dot-r',pending:'dot-p',error:'dot-e'}[s.status]||'dot-p') + '"></div><div class="scan-info"><div class="scan-url">' + esc(s.target) + '</div><div class="scan-meta">' + meta + '</div></div>' + chips + pill(s.status) + '</div>';
 }
 
 function statCard(lbl, val, extra) {
@@ -1095,7 +1097,7 @@ function statCard(lbl, val, extra) {
 
 // ── Dashboard ──────────────────────────────────────────────────────────────
 async function pgDashboard(el) {
-  el.innerHTML = '<div class="pg-hd"><div><div class="pg-title">Dashboard</div><div class="pg-sub">overview &amp; intelligence</div></div><button class="btn btn-lime btn-sm" onclick="go('new-scan')">New Scan</button></div><div class="loading"><div class="spin"></div>Loading&hellip;</div>';
+  el.innerHTML = '<div class="pg-hd"><div><div class="pg-title">Dashboard</div><div class="pg-sub">overview &amp; intelligence</div></div><button class="btn btn-lime btn-sm" onclick="go(\'new-scan\')">New Scan</button></div><div class="loading"><div class="spin"></div>Loading&hellip;</div>';
   try {
     var scans = await api('GET', '/scans?limit=100');
     var done  = scans.filter(function(s) { return s.status === 'complete'; });
@@ -1108,7 +1110,7 @@ async function pgDashboard(el) {
     }).join('');
     var running = scans.filter(function(s){return s.status==='running';}).length;
     el.innerHTML =
-      '<div class="pg-hd"><div><div class="pg-title">Dashboard</div><div class="pg-sub">overview &amp; intelligence</div></div><button class="btn btn-lime btn-sm" onclick="go('new-scan')">New Scan</button></div>' +
+      '<div class="pg-hd"><div><div class="pg-title">Dashboard</div><div class="pg-sub">overview &amp; intelligence</div></div><button class="btn btn-lime btn-sm" onclick="go(\'new-scan\')">New Scan</button></div>' +
       '<div class="stat-row">' +
         '<div class="stat"><div class="stat-lbl">Scans</div><div class="stat-val">' + scans.length + '</div><div class="stat-foot">' + done.length + ' complete</div></div>' +
         '<div class="stat"><div class="stat-lbl">Findings</div><div class="stat-val">' + tf + '</div></div>' +
@@ -1117,7 +1119,7 @@ async function pgDashboard(el) {
         '<div class="stat"><div class="stat-lbl" style="color:var(--sl)">Running</div><div class="stat-val" style="color:var(--sl)">' + running + '</div></div>' +
       '</div>' +
       '<div style="display:grid;grid-template-columns:1fr 258px;gap:10px">' +
-        '<div class="card"><div class="card-title">Recent Scans</div><div class="scan-list">' + (scans.length ? scans.slice(0,7).map(scanRow).join('') : '<div class="empty">No scans yet.</div>') + '</div>' + (scans.length > 7 ? '<div style="text-align:center;margin-top:10px"><button class="btn btn-ghost btn-sm" onclick="go('scans')">View all ' + scans.length + '</button></div>' : '') + '</div>' +
+        '<div class="card"><div class="card-title">Recent Scans</div><div class="scan-list">' + (scans.length ? scans.slice(0,7).map(scanRow).join('') : '<div class="empty">No scans yet.</div>') + '</div>' + (scans.length > 7 ? '<div style="text-align:center;margin-top:10px"><button class="btn btn-ghost btn-sm" onclick="go(\'scans\')">View all ' + scans.length + '</button></div>' : '') + '</div>' +
         '<div class="card"><div class="card-title">Severity</div>' + (tf === 0 ? '<div class="empty" style="padding:14px 0">No findings yet.</div>' : bars) + '</div>' +
       '</div>';
   } catch(e) {
@@ -1145,7 +1147,7 @@ var selProf = 'standard';
 function pgNewScan(el) {
   var profCards = Object.keys(PROFS).map(function(k) {
     var v = PROFS[k];
-    return '<div class="prof-card ' + (k===selProf?'sel':'') + '" id="pc-' + k + '" onclick="pickProf('' + k + '')">' +
+    return '<div class="prof-card ' + (k===selProf?'sel':'') + '" id="pc-' + k + '" onclick="pickProf(\'' + k + '\')">' +
       '<div class="prof-tag">' + v.tag + '</div>' +
       '<div class="prof-name">' + k[0].toUpperCase() + k.slice(1) + '</div>' +
       '<div class="prof-desc">' + v.desc + '</div>' +
@@ -1191,23 +1193,23 @@ async function launch() {
     return;
   }
   var ov = {};
-  TOGS.forEach(function(t) {
-    var el = document.getElementById('tog-' + t.key);
-    if (el && el.checked) ov[t.key] = true;
+  TOGS.forEach(function(tog) {
+    var el = document.getElementById('tog-' + tog.key);
+    if (el && el.checked) ov[tog.key] = true;
   });
   var btn = document.getElementById('lb');
   btn.disabled = true;
   btn.innerHTML = '<div class="spin" style="display:inline-block"></div> Launching';
   document.getElementById('sc-err').style.display = 'none';
   try {
-    var s = await api('POST', '/scans', {
+    var body = Object.assign({
       target:    t,
       profile:   selProf,
       max_depth: parseInt(document.getElementById('sc-d').value),
       max_pages: parseInt(document.getElementById('sc-p').value),
       delay:     parseFloat(document.getElementById('sc-l').value),
-    });
-    Object.assign(s, ov);
+    }, ov);
+    var s = await api('POST', '/scans', body);
     go('scan-live', s);
   } catch(e) {
     var er = document.getElementById('sc-err');
@@ -1222,7 +1224,7 @@ async function launch() {
 function pgScanLive(el, scan) {
   el.innerHTML =
     '<div class="flex ac g2" style="margin-bottom:6px">' +
-      '<button class="btn btn-ghost btn-sm" onclick="go('scans')">&larr;</button>' +
+      '<button class="btn btn-ghost btn-sm" onclick="go(\'scans\')">&larr;</button>' +
       '<div><div class="pg-title" style="font-size:1.15rem">Scanning</div><div class="pg-sub" style="font-family:var(--fm)">' + esc(scan.target) + '</div></div>' +
       '<div class="spin" style="margin-left:4px"></div>' +
     '</div>' +
@@ -1237,7 +1239,7 @@ function pgScanLive(el, scan) {
       '<div class="lf-list" id="lf"></div>' +
     '</div>' +
     '<div id="done" style="display:none;margin-top:14px">' +
-      '<button class="btn btn-lime" onclick="go('scan-detail',{id:'' + scan.id + ''})">View Report &rarr;</button>' +
+      '<button class="btn btn-lime" onclick="go(\'scan-detail\',{id:\'' + scan.id + '\'})">View Report &rarr;</button>' +
     '</div>';
 
   var logEl = document.getElementById('log');
@@ -1298,7 +1300,7 @@ async function pgHistory(el) {
   try {
     var scans = await api('GET', '/scans?limit=100');
     el.innerHTML =
-      '<div class="pg-hd"><div><div class="pg-title">History</div><div class="pg-sub">' + scans.length + ' assessment' + (scans.length!==1?'s':'') + '</div></div><button class="btn btn-lime btn-sm" onclick="go('new-scan')">New Scan</button></div>' +
+      '<div class="pg-hd"><div><div class="pg-title">History</div><div class="pg-sub">' + scans.length + ' assessment' + (scans.length!==1?'s':'') + '</div></div><button class="btn btn-lime btn-sm" onclick="go(\'new-scan\')">New Scan</button></div>' +
       '<div class="scan-list">' + (scans.length ? scans.map(scanRow).join('') : '<div class="empty">No scans yet.</div>') + '</div>';
   } catch(e) {
     el.innerHTML = '<div class="err">' + esc(e.message) + '</div>';
@@ -1323,17 +1325,17 @@ async function pgScanDetail(el, data) {
       '<div class="pg-hd">' +
         '<div style="flex:1;min-width:0">' +
           '<div class="flex ac g2" style="flex-wrap:wrap;margin-bottom:4px">' +
-            '<button class="btn btn-ghost btn-sm" onclick="go('scans')">&larr;</button>' +
+            '<button class="btn btn-ghost btn-sm" onclick="go(\'scans\')">&larr;</button>' +
             '<div class="pg-title" style="font-size:1.1rem;flex:1">' + esc(scan.target) + '</div>' +
             pill(scan.status) +
           '</div>' +
           '<div class="pg-sub">' + scan.profile + ' &middot; ' + rel(scan.created_at) + ' &middot; ' + (s.pages_crawled||0) + ' pages &middot; ' + (s.input_vectors||0) + ' vectors &middot; ' + (s.duration_s||0) + 's</div>' +
         '</div>' +
         '<div class="flex g2" style="flex-wrap:wrap;flex-shrink:0">' +
-          '<button class="rbt" onclick="openReport('' + id + '','html')">HTML</button>' +
-          '<button class="rbt" onclick="openReport('' + id + '','markdown')">MD</button>' +
-          '<button class="rbt" onclick="openReport('' + id + '','json')">JSON</button>' +
-          '<button class="btn btn-danger btn-sm" onclick="delScan('' + id + '')">Delete</button>' +
+          '<button class="rbt" onclick="openReport(\'' + id + '\',\'html\')">HTML</button>' +
+          '<button class="rbt" onclick="openReport(\'' + id + '\',\'markdown\')">MD</button>' +
+          '<button class="rbt" onclick="openReport(\'' + id + '\',\'json\')">JSON</button>' +
+          '<button class="btn btn-danger btn-sm" onclick="delScan(\'' + id + '\')">Delete</button>' +
         '</div>' +
       '</div>' +
       '<div class="stat-row" style="margin-bottom:20px">' + sevStats + '</div>' +
@@ -1347,9 +1349,9 @@ function renderFinds(fs) {
   if (!fs.length) return '<div class="empty">No vulnerabilities detected.</div>';
   var bySev = {};
   fs.forEach(function(f) { bySev[f.severity] = bySev[f.severity] || []; bySev[f.severity].push(f); });
-  var filters = '<span class="f-lbl">FILTER</span><span class="fb on" onclick="filtF('ALL',this)" style="color:var(--t2)">ALL (' + fs.length + ')</span>';
+  var filters = '<span class="f-lbl">FILTER</span><span class="fb on" onclick="filtF(\'ALL\',this)" style="color:var(--t2)">ALL (' + fs.length + ')</span>';
   ['CRITICAL','HIGH','MEDIUM','LOW','INFO'].forEach(function(sv) {
-    if (bySev[sv]) filters += '<span class="fb" onclick="filtF('' + sv + '',this)" style="color:' + SC[sv] + '">' + sv + ' (' + bySev[sv].length + ')</span>';
+    if (bySev[sv]) filters += '<span class="fb" onclick="filtF(\'' + sv + '\',this)" style="color:' + SC[sv] + '">' + sv + ' (' + bySev[sv].length + ')</span>';
   });
   return '<div class="filter-bar">' + filters + '</div><div id="fi-list">' + fs.map(findCard).join('') + '</div>';
 }
@@ -1495,11 +1497,11 @@ function pgAdmin(el) {
   el.innerHTML =
     '<div class="pg-hd"><div><div class="pg-title">Admin</div><div class="pg-sub">system control</div></div></div>' +
     '<div class="admin-tabs">' +
-      '<div class="admin-tab active" id="at-overview" onclick="aSwitch('overview')">Overview</div>' +
-      '<div class="admin-tab" id="at-users"    onclick="aSwitch('users')">Users</div>' +
-      '<div class="admin-tab" id="at-scans"    onclick="aSwitch('scans')">Scans</div>' +
-      '<div class="admin-tab" id="at-audit"    onclick="aSwitch('audit')">Audit Log</div>' +
-      '<div class="admin-tab" id="at-logins"   onclick="aSwitch('logins')">Logins</div>' +
+      '<div class="admin-tab active" id="at-overview" onclick="aSwitch(\'overview\')">Overview</div>' +
+      '<div class="admin-tab" id="at-users"    onclick="aSwitch(\'users\')">Users</div>' +
+      '<div class="admin-tab" id="at-scans"    onclick="aSwitch(\'scans\')">Scans</div>' +
+      '<div class="admin-tab" id="at-audit"    onclick="aSwitch(\'audit\')">Audit Log</div>' +
+      '<div class="admin-tab" id="at-logins"   onclick="aSwitch(\'logins\')">Logins</div>' +
     '</div>' +
     '<div id="ab"></div>';
   aSwitch(aTab);
@@ -1548,17 +1550,17 @@ async function aUsers(el) {
     var d = await api('GET', '/admin/users?limit=50&skip=' + uSkip + '&search=' + encodeURIComponent(uSrch));
     var rows = d.users.map(function(u) {
       var actions = u.id !== (USER && USER.id)
-        ? '<div class="flex g2"><button class="btn btn-sm ' + (u.is_active?'btn-warn':'btn-ghost') + '" onclick="aTog('' + u.id + '',' + !u.is_active + ')">' + (u.is_active?'Suspend':'Activate') + '</button><button class="btn btn-ghost btn-sm" onclick="aAdm('' + u.id + '',' + !u.is_admin + ')">' + (u.is_admin?'Demote':'Promote') + '</button><button class="btn btn-danger btn-sm" onclick="aDel('' + u.id + '','' + esc(u.username) + '')">Del</button></div>'
+        ? '<div class="flex g2"><button class="btn btn-sm ' + (u.is_active?'btn-warn':'btn-ghost') + '" onclick="aTog(\'' + u.id + '\',' + !u.is_active + ')">' + (u.is_active?'Suspend':'Activate') + '</button><button class="btn btn-ghost btn-sm" onclick="aAdm(\'' + u.id + '\',' + !u.is_admin + ')">' + (u.is_admin?'Demote':'Promote') + '</button><button class="btn btn-danger btn-sm" onclick="aDel(\'' + u.id + '\',\'' + esc(u.username) + '\')">Del</button></div>'
         : '<span class="muted xs" style="font-family:var(--fm)">(you)</span>';
       return '<tr><td><div style="font-weight:600">' + esc(u.username) + '</div>' + (u.is_admin?'<span style="font-family:var(--fm);font-size:.6rem;color:#a78bfa">ADMIN</span>':'') + '</td><td class="muted" style="font-family:var(--fm);font-size:.76rem">' + esc(u.email) + '</td><td>' + (u.is_active?'<span class="spill sp-complete">ACTIVE</span>':'<span class="spill sp-error">SUSPENDED</span>') + '</td><td style="font-family:var(--fm)">' + u.scan_count + '</td><td class="muted xs" style="font-family:var(--fm)">' + (u.last_login?rel(u.last_login):'Never') + '</td><td>' + actions + '</td></tr>';
     }).join('');
     el.innerHTML =
-      '<div class="flex g2 ac" style="margin-bottom:14px"><input class="search" id="us-inp" placeholder="Search username or email" value="' + esc(uSrch) + '" oninput="uSrch=this.value" onkeydown="if(event.key==='Enter'){uSkip=0;aSwitch('users')}"><button class="btn btn-ghost btn-sm" onclick="uSkip=0;aSwitch('users')">Search</button><span class="muted xs" style="font-family:var(--fm)">' + d.total + ' users</span></div>' +
+      '<div class="flex g2 ac" style="margin-bottom:14px"><input class="search" id="us-inp" placeholder="Search username or email" value="' + esc(uSrch) + '" oninput="uSrch=this.value" onkeydown="if(event.key==='Enter'){uSkip=0;aSwitch(\'users\')}'"><button class="btn btn-ghost btn-sm" onclick="uSkip=0;aSwitch(\'users\')">Search</button><span class="muted xs" style="font-family:var(--fm)">' + d.total + ' users</span></div>' +
       '<table class="tbl"><thead><tr><th>User</th><th>Email</th><th>Status</th><th>Scans</th><th>Last Login</th><th>Actions</th></tr></thead><tbody>' + rows + '</tbody></table>' +
       '<div class="pag">' +
-        (uSkip>0 ? '<button class="btn btn-ghost btn-sm" onclick="uSkip=Math.max(0,uSkip-50);aSwitch('users')">&larr;</button>' : '') +
+        (uSkip>0 ? '<button class="btn btn-ghost btn-sm" onclick="uSkip=Math.max(0,uSkip-50);aSwitch(\'users\')">&larr;</button>' : '') +
         '<span>' + (uSkip+1) + '–' + Math.min(uSkip+50,d.total) + ' of ' + d.total + '</span>' +
-        (uSkip+50<d.total ? '<button class="btn btn-ghost btn-sm" onclick="uSkip+=50;aSwitch('users')">&rarr;</button>' : '') +
+        (uSkip+50<d.total ? '<button class="btn btn-ghost btn-sm" onclick="uSkip+=50;aSwitch(\'users\')">&rarr;</button>' : '') +
       '</div>';
   } catch(e) { el.innerHTML = '<div class="err">' + esc(e.message) + '</div>'; }
 }
@@ -1572,15 +1574,15 @@ async function aScans(el) {
     var d = await api('GET', '/admin/scans?limit=50&skip=' + sSkip);
     var rows = d.scans.map(function(s) {
       var meta = rel(s.created_at) + ' &middot; ' + s.profile + (s.username?' &middot; '+s.username:'');
-      return '<div class="scan-row" style="cursor:default"><div class="scan-dot ' + ({complete:'dot-c',running:'dot-r',pending:'dot-p',error:'dot-e'}[s.status]||'dot-p') + '"></div><div class="scan-info"><div class="scan-url">' + esc(s.target) + '</div><div class="scan-meta">' + meta + '</div></div><div class="flex g2 ac">' + pill(s.status) + '<button class="btn btn-danger btn-sm" onclick="aDS('' + s.id + '')">Del</button></div></div>';
+      return '<div class="scan-row" style="cursor:default"><div class="scan-dot ' + ({complete:'dot-c',running:'dot-r',pending:'dot-p',error:'dot-e'}[s.status]||'dot-p') + '"></div><div class="scan-info"><div class="scan-url">' + esc(s.target) + '</div><div class="scan-meta">' + meta + '</div></div><div class="flex g2 ac">' + pill(s.status) + '<button class="btn btn-danger btn-sm" onclick="aDS(\'' + s.id + '\')">Del</button></div></div>';
     }).join('');
     el.innerHTML =
       '<div style="margin-bottom:12px"><span class="muted xs" style="font-family:var(--fm)">' + d.total + ' scans</span></div>' +
       '<div class="scan-list">' + rows + '</div>' +
       '<div class="pag">' +
-        (sSkip>0?'<button class="btn btn-ghost btn-sm" onclick="sSkip=Math.max(0,sSkip-50);aSwitch('scans')">&larr;</button>':'') +
+        (sSkip>0?'<button class="btn btn-ghost btn-sm" onclick="sSkip=Math.max(0,sSkip-50);aSwitch(\'scans\')">&larr;</button>':'') +
         '<span>' + (sSkip+1) + '–' + Math.min(sSkip+50,d.total) + ' of ' + d.total + '</span>' +
-        (sSkip+50<d.total?'<button class="btn btn-ghost btn-sm" onclick="sSkip+=50;aSwitch('scans')">&rarr;</button>':'') +
+        (sSkip+50<d.total?'<button class="btn btn-ghost btn-sm" onclick="sSkip+=50;aSwitch(\'scans\')">&rarr;</button>':'') +
       '</div>';
   } catch(e) { el.innerHTML = '<div class="err">' + esc(e.message) + '</div>'; }
 }
