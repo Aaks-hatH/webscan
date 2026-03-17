@@ -202,19 +202,27 @@ class AdminProber:
         return findings
 
     async def _find_login_endpoints(self) -> list[str]:
-        """Return login endpoint URLs that respond to POST (200/400/401/422)."""
+        """Return login endpoint URLs that respond to POST JSON with non-HTML content."""
         found = []
         for path in _LOGIN_PATHS:
             url = self.origin + path
             try:
-                # HEAD first to confirm existence without sending credentials
-                resp = await self.client.head(url, timeout=self.timeout, follow_redirects=False)
-                if resp.status_code not in (404, 410):
+                # POST a dummy JSON body — real login endpoints accept POST+JSON
+                # and return JSON errors/prompts. SPA catch-alls return HTML.
+                resp = await self.client.post(
+                    url,
+                    json={"_probe": True},
+                    timeout=self.timeout,
+                    follow_redirects=False,
+                    headers={**get_browser_headers(url),
+                             "Content-Type": "application/json"},
+                )
+                ct = resp.headers.get("content-type", "").lower()
+                # Accept endpoint if it returned non-HTML (JSON error/prompt)
+                # OR a 405 Method Not Allowed (GET-only endpoint, still real)
+                if resp.status_code == 405:
                     found.append(url)
-                    continue
-                # Some servers 405 on HEAD — try GET
-                resp2 = await self.client.get(url, timeout=self.timeout, follow_redirects=False)
-                if resp2.status_code not in (404, 410):
+                elif resp.status_code not in (404, 410) and "html" not in ct:
                     found.append(url)
             except Exception:
                 pass
@@ -244,18 +252,40 @@ class AdminProber:
                 except Exception:
                     pass
 
-                if resp.status_code in (200, 201):
-                    # Try to extract token
-                    token = None
-                    try:
-                        data = resp.json()
-                        token = (data.get("token") or data.get("access_token") or
-                                 data.get("accessToken") or data.get("jwt"))
-                    except Exception:
-                        pass
-                    log.info("[AdminProber] Login success at %s with %s / %s",
-                             endpoint, username, password)
-                    return resp.status_code, body, token
+                if resp.status_code not in (200, 201):
+                    continue
+
+                # ── SPA false-positive filter ─────────────────────────────────
+                # A React SPA with a catch-all redirect returns 200 text/html for
+                # every URL including fake API paths.  A real login endpoint always
+                # returns JSON.  Reject any response that is HTML or that doesn't
+                # contain a recognisable auth payload.
+                ct = resp.headers.get("content-type", "").lower()
+                if "html" in ct:
+                    log.debug("[AdminProber] Skipping HTML response at %s (SPA catch-all)", endpoint)
+                    return None
+                if "json" not in ct:
+                    log.debug("[AdminProber] Skipping non-JSON response at %s (ct=%s)", endpoint, ct)
+                    return None
+
+                # Must contain at least one auth-looking key
+                try:
+                    data = resp.json()
+                except Exception:
+                    return None
+
+                token = (data.get("token") or data.get("access_token") or
+                         data.get("accessToken") or data.get("jwt"))
+
+                # Require either a token OR an explicit success indicator in the body
+                auth_keys = {"token", "access_token", "accessToken", "jwt",
+                             "message", "user", "admin", "success"}
+                if not (token or any(k in data for k in auth_keys)):
+                    return None
+
+                log.info("[AdminProber] Login success at %s with %s / %s",
+                         endpoint, username, password)
+                return resp.status_code, body, token
 
             except Exception as exc:
                 log.debug("[AdminProber] Credential test error at %s: %s", endpoint, exc)
