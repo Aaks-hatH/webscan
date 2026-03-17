@@ -34,6 +34,11 @@ from detection.dom_xss_detector import DOMXSSDetector
 from detection.idor_detector import IDORDetector
 from detection.spa_detector import SPADetector
 from detection.api_fuzzer import APIFuzzer, OpenAPIImporter
+from detection.path_bruteforce import PathBruteforcer
+from detection.jwt_analyzer import JWTAnalyzer
+from detection.tech_fingerprint import TechFingerprinter
+from detection.js_secret_extractor import JSSecretExtractor
+from detection.admin_prober import AdminProber
 from discovery.input_discovery import InputDiscovery
 from discovery.js_extractor import JSEndpointExtractor
 
@@ -340,6 +345,99 @@ class AsyncScannerEngine:
                         for f in r:
                             findings.append(f)
                             await _emit_finding(progress, f)
+
+            # ── Phase 12: Technology fingerprinting ───────────────────────────
+            if self._flags.get("run_tech_fingerprint"):
+                await progress.put({"type": "phase", "data": {
+                    "phase": "tech_fingerprint",
+                    "message": "Fingerprinting technology stack…",
+                }})
+                tech_fp = TechFingerprinter()
+                tech_profile, tech_findings = tech_fp.fingerprint(valid_pages)
+                for f in tech_findings:
+                    findings.append(f)
+                    await _emit_finding(progress, f)
+                await progress.put({"type": "progress", "data": {
+                    "phase": "tech_fingerprint",
+                    "message": f"Stack identified: {tech_profile.summary()}",
+                }})
+
+            # ── Phase 13: JS secret extraction ───────────────────────────────
+            if self._flags.get("run_js_secrets"):
+                await progress.put({"type": "phase", "data": {
+                    "phase": "js_secrets",
+                    "message": "Scanning JavaScript files for hardcoded secrets…",
+                }})
+                js_extractor_secrets = JSSecretExtractor(client, origin)
+                secret_findings = await js_extractor_secrets.run(valid_pages)
+                for f in secret_findings:
+                    findings.append(f)
+                    await _emit_finding(progress, f)
+                await progress.put({"type": "progress", "data": {
+                    "phase": "js_secrets",
+                    "message": f"JS secret scan complete — {len(secret_findings)} finding(s)",
+                }})
+
+            # ── Phase 14: Path bruteforce ─────────────────────────────────────
+            if self._flags.get("run_path_bruteforce"):
+                await progress.put({"type": "phase", "data": {
+                    "phase": "path_bruteforce",
+                    "message": "Bruteforcing hidden paths and admin endpoints…",
+                }})
+                brute_found = 0
+
+                async def _brute_progress(current, total, url, status):
+                    nonlocal brute_found
+                    if status not in (404, 410):
+                        brute_found += 1
+                    await progress.put({"type": "progress", "data": {
+                        "phase": "path_bruteforce",
+                        "current": current,
+                        "total": total,
+                        "message": f"[{current}/{total}] {url} → {status}",
+                    }})
+
+                bruteforcer = PathBruteforcer(client, origin)
+                brute_findings = await bruteforcer.run(progress_cb=_brute_progress)
+                for f in brute_findings:
+                    findings.append(f)
+                    await _emit_finding(progress, f)
+                await progress.put({"type": "progress", "data": {
+                    "phase": "path_bruteforce",
+                    "message": f"Path bruteforce complete — {len(brute_findings)} interesting path(s)",
+                }})
+
+            # ── Phase 15: JWT analysis ────────────────────────────────────────
+            if self._flags.get("run_jwt_analysis"):
+                await progress.put({"type": "phase", "data": {
+                    "phase": "jwt_analysis",
+                    "message": "Analysing JWT tokens for weaknesses…",
+                }})
+                jwt_analyzer = JWTAnalyzer(client, origin)
+                jwt_findings = await jwt_analyzer.analyze(valid_pages)
+                for f in jwt_findings:
+                    findings.append(f)
+                    await _emit_finding(progress, f)
+                await progress.put({"type": "progress", "data": {
+                    "phase": "jwt_analysis",
+                    "message": f"JWT analysis complete — {len(jwt_findings)} finding(s)",
+                }})
+
+            # ── Phase 16: Admin prober (pentest profile only) ─────────────────
+            if self._flags.get("run_admin_probe"):
+                await progress.put({"type": "phase", "data": {
+                    "phase": "admin_probe",
+                    "message": "Probing admin authentication bypass vectors…",
+                }})
+                admin_prober = AdminProber(client, origin)
+                admin_findings = await admin_prober.run()
+                for f in admin_findings:
+                    findings.append(f)
+                    await _emit_finding(progress, f)
+                await progress.put({"type": "progress", "data": {
+                    "phase": "admin_probe",
+                    "message": f"Admin probe complete — {len(admin_findings)} finding(s)",
+                }})
 
         # ── Finalise ──────────────────────────────────────────────────────────
         findings = _dedup_and_sort(findings)
