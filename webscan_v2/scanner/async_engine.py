@@ -30,6 +30,7 @@ from detection.sqli_detector import SQLiDetector
 from detection.stored_xss import StoredXSSDetector
 from detection.blind_sqli import BlindSQLiDetector
 from detection.csrf_detector import CSRFDetector
+from detection.dom_xss_detector import DOMXSSDetector
 from detection.idor_detector import IDORDetector
 from detection.spa_detector import SPADetector
 from detection.api_fuzzer import APIFuzzer, OpenAPIImporter
@@ -196,16 +197,21 @@ class AsyncScannerEngine:
                             findings.append(f)
                             await _emit_finding(progress, f)
 
-            # ── Phase 6: CSRF ─────────────────────────────────────────────────
+            # ── Phase 6: CSRF + redirect form checks ─────────────────────────
             if self._flags.get("run_csrf"):
                 await progress.put({"type": "phase", "data": {
-                    "phase": "csrf", "message": "Checking for CSRF protection…",
+                    "phase": "csrf", "message": "Checking CSRF protection & redirect fields…",
                 }})
-                csrf_det = CSRFDetector()
+                csrf_det       = CSRFDetector()
+                redir_page_det = RedirectDetector(client)
                 for page in valid_pages:
                     for f in csrf_det.check_page(page):
                         findings.append(f)
                         await _emit_finding(progress, f)
+                    if self._flags.get("run_redirects"):
+                        for f in redir_page_det.check_page(page):
+                            findings.append(f)
+                            await _emit_finding(progress, f)
 
             # ── Phase 7: Info leak ────────────────────────────────────────────
             if self._flags.get("run_info_leak"):
@@ -215,6 +221,14 @@ class AsyncScannerEngine:
                 leak_det = InfoLeakDetector()
                 for page in valid_pages:
                     for f in leak_det.check_page(page):
+                        findings.append(f)
+                        await _emit_finding(progress, f)
+
+            # ── Phase 8a: DOM XSS detection ───────────────────────────────────
+            if self._flags.get("run_xss"):
+                dom_xss = DOMXSSDetector()
+                for page in valid_pages:
+                    for f in dom_xss.check_page(page):
                         findings.append(f)
                         await _emit_finding(progress, f)
 
