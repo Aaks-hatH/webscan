@@ -1138,6 +1138,7 @@ var PROFS = {
   standard: {tag:'STANDARD', desc:'Full input testing'},
   full:     {tag:'FULL',     desc:'Everything + blind SQLi'},
   api:      {tag:'API',      desc:'API & JSON focus'},
+  pentest:  {tag:'PENTEST',  desc:'Admin bypass, JWT attacks, secret extraction'},
 };
 var TOGS = [
   {key:'run_xss',label:'Reflected XSS'},{key:'run_sqli',label:'Error SQLi'},
@@ -1145,6 +1146,9 @@ var TOGS = [
   {key:'run_csrf',label:'CSRF'},{key:'run_idor',label:'IDOR'},
   {key:'run_headers',label:'Headers'},{key:'run_redirects',label:'Redirects'},
   {key:'run_exposure',label:'File Exposure'},{key:'run_info_leak',label:'Info Leaks'},
+  {key:'run_path_bruteforce',label:'Path Bruteforce'},{key:'run_jwt_analysis',label:'JWT Analysis'},
+  {key:'run_tech_fingerprint',label:'Tech Fingerprint'},{key:'run_js_secrets',label:'JS Secrets'},
+  {key:'run_admin_probe',label:'Admin Probe ⚠'},
 ];
 var selProf = 'standard';
 
@@ -1249,7 +1253,7 @@ function pgScanLive(el, scan) {
   var logEl = document.getElementById('log');
   var lfEl  = document.getElementById('lf');
   var phEl  = document.getElementById('ph');
-  var PCTS  = {crawling:10,discovery:22,headers:32,csrf:38,info_leak:46,exposure:56,stored_xss:66,api_fuzz:82,fuzzing:95};
+  var PCTS  = {crawling:8,discovery:16,headers:22,csrf:28,info_leak:34,exposure:40,stored_xss:48,api_fuzz:56,fuzzing:64,tech_fingerprint:70,js_secrets:76,path_bruteforce:84,jwt_analysis:90,admin_probe:96};
 
   function addLog(txt, cls) {
     var d = document.createElement('div');
