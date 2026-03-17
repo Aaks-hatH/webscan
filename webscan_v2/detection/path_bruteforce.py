@@ -189,6 +189,37 @@ class PathBruteforcer:
         self.timeout     = timeout
         self.stealth     = stealth
 
+    async def _fingerprint_spa(self) -> Optional[tuple[int, str]]:
+        """
+        Detect a React/SPA catch-all by requesting two random UUIDs.
+        If both return 200 with the same body size and HTML content-type,
+        the app serves a catch-all index.html — record (size, content_type)
+        as the fingerprint to filter out later.
+        Returns (body_size, content_type_prefix) or None.
+        """
+        import uuid
+        fingerprints = []
+        for _ in range(2):
+            fake = f"/{uuid.uuid4().hex}/nonexistent-wscan-probe"
+            url  = self.origin + fake
+            try:
+                resp = await self.client.get(
+                    url, timeout=self.timeout, follow_redirects=True,
+                    headers=get_browser_headers(url),
+                )
+                ct = resp.headers.get("content-type", "").lower()
+                if resp.status_code == 200 and "html" in ct:
+                    fingerprints.append((len(resp.content), ct.split(";")[0].strip()))
+            except Exception:
+                pass
+
+        # Both probes hit 200 HTML with the same size → confirmed SPA catch-all
+        if len(fingerprints) == 2 and fingerprints[0] == fingerprints[1]:
+            log.info("[PathBrute] SPA catch-all detected — size=%d, ct=%s",
+                     fingerprints[0][0], fingerprints[0][1])
+            return fingerprints[0]
+        return None
+
     async def run(
         self,
         progress_cb=None,   # optional async callable(current, total, url, status)
@@ -196,6 +227,9 @@ class PathBruteforcer:
         """
         Run the bruteforce and return a list of Findings.
         """
+        # Step 0: fingerprint SPA catch-all so we don't flag every React route
+        spa_catchall: Optional[tuple[int, str]] = await self._fingerprint_spa()
+
         paths = list(self.paths)
         if self.stealth:
             random.shuffle(paths)
@@ -205,7 +239,7 @@ class PathBruteforcer:
 
         async def probe(idx: int, path: str):
             async with sem:
-                r = await self._probe_path(path)
+                r = await self._probe_path(path, spa_catchall)
                 if r:
                     results.append(r)
                 if progress_cb:
@@ -220,7 +254,9 @@ class PathBruteforcer:
 
         return _results_to_findings(results, self.origin)
 
-    async def _probe_path(self, path: str) -> Optional[BruteResult]:
+    async def _probe_path(
+        self, path: str, spa_catchall: Optional[tuple[int, str]] = None
+    ) -> Optional[BruteResult]:
         url = self.origin + path
         try:
             resp = await self.client.get(
@@ -232,19 +268,37 @@ class PathBruteforcer:
             if resp.status_code not in _INTERESTING_CODES:
                 return None
 
-            ct       = resp.headers.get("content-type", "")
-            location = resp.headers.get("location", "")
-            body     = ""
+            ct           = resp.headers.get("content-type", "")
+            ct_lower     = ct.lower()
+            location     = resp.headers.get("location", "")
+            body_bytes   = resp.content
+            body_size    = len(body_bytes)
+            body         = ""
             try:
                 body = resp.text[:400]
             except Exception:
                 pass
 
+            # ── SPA catch-all filter ──────────────────────────────────────────
+            # If the app serves a React/SPA index.html for every unknown path,
+            # responses that match the fingerprint (same size + HTML content-type)
+            # are NOT real endpoints — skip them entirely.
+            # Exception: API paths that return JSON are always real regardless.
+            if spa_catchall and resp.status_code in _HIGH_VALUE_CODES:
+                catchall_size, catchall_ct = spa_catchall
+                is_html = "html" in ct_lower
+                is_json = "json" in ct_lower
+                size_matches = abs(body_size - catchall_size) < 64  # ±64 bytes tolerance
+
+                if is_html and size_matches and not is_json:
+                    log.debug("[PathBrute] SPA catch-all filtered: %s (%dB)", url, body_size)
+                    return None
+
             return BruteResult(
                 url=url,
                 status_code=resp.status_code,
                 content_type=ct,
-                body_size=len(resp.content),
+                body_size=body_size,
                 redirect_to=location,
                 snippet=body,
             )
