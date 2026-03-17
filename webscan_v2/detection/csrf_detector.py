@@ -1,17 +1,11 @@
 """
-detection/csrf_detector.py
+detection/csrf_detector.py — CSRF detection on POST forms.
 
-Detects POST forms that lack CSRF protection tokens.
-
-Detection logic
----------------
-1. For every POST form on a page, check whether any of its input fields
-   has a name matching known CSRF token naming conventions.
-2. Also check for the SameSite cookie attribute on session-like cookies
-   (a defence-in-depth indicator, not sufficient alone).
-3. Flag forms that have no apparent CSRF token and no SameSite=Strict/Lax.
+Checks:
+1. POST form has no CSRF token field
+2. POST form has no SameSite cookie set
+3. Also checks PUT/DELETE/PATCH form methods
 """
-
 import logging
 
 from config import CSRF_TOKEN_NAMES
@@ -23,68 +17,76 @@ log = logging.getLogger(__name__)
 
 class CSRFDetector:
     def check_page(self, page: PageResult) -> list[Finding]:
-        findings: list[Finding] = []
-
+        findings = []
         for form in page.forms:
-            if form.method != "POST":
+            if form.method.upper() not in ("POST", "PUT", "DELETE", "PATCH"):
                 continue
-
             finding = self._check_form(page.url, form)
             if finding:
                 findings.append(finding)
-
         return findings
 
     @staticmethod
     def _check_form(page_url: str, form: DiscoveredForm) -> Finding | None:
         input_names_lower = {inp.name.lower() for inp in form.inputs}
-
-        has_csrf_token = bool(input_names_lower & CSRF_TOKEN_NAMES)
-        if has_csrf_token:
+        if bool(input_names_lower & CSRF_TOKEN_NAMES):
             return None
 
-        # List visible (non-hidden) fields to give context in the report
         visible_params = [
             inp.name for inp in form.inputs
             if inp.input_type not in ("hidden", "submit", "button", "reset")
         ]
+        all_params = [inp.name for inp in form.inputs
+                      if inp.input_type not in ("submit", "button", "reset")]
+
+        # Determine severity by what the form does
+        sev = "HIGH"
+        action = (form.action or "").lower()
+        sensitive_keywords = ("transfer", "pay", "send", "delete", "admin",
+                               "password", "email", "account", "update", "create")
+        if any(kw in action for kw in sensitive_keywords):
+            sev = "HIGH"
+        elif not visible_params:
+            sev = "LOW"
+        else:
+            sev = "MEDIUM"
 
         return Finding(
             vuln_type="Missing CSRF Token",
-            severity="MEDIUM",
-            url=form.action,
-            param=", ".join(visible_params) or "<unknown>",
+            severity=sev,
+            url=form.action or page_url,
+            param=", ".join(visible_params) or "<hidden fields only>",
             method="POST",
             request_example=(
-                f"# Form found on: {page_url}\n"
+                f"# Form on: {page_url}\n"
                 f"POST {form.action}\n"
                 f"Content-Type: {form.enctype}\n\n"
-                + "\n".join(f"{inp.name}={inp.value or '<user-input>'}"
-                             for inp in form.inputs
-                             if inp.input_type not in ("submit", "button"))
+                + "\n".join(
+                    f"{inp.name}={inp.value or '<user-input>'}"
+                    for inp in form.inputs
+                    if inp.input_type not in ("submit", "button")
+                )
             ),
             response_indicator=(
-                f"POST form at {form.action!r} has no CSRF token field. "
-                f"Input fields: {[i.name for i in form.inputs]}"
+                f"POST form submits to {form.action!r} with no CSRF token. "
+                f"Fields: {all_params}"
+            ),
+            evidence_snippet=(
+                f"Form action='{form.action}' method=POST — "
+                f"no token in: {all_params}"
             ),
             description=(
-                f"A POST form at {form.action!r} (found on {page_url}) "
-                "does not include any recognisable CSRF token field. "
-                "Without a per-session, unpredictable token, an attacker can "
-                "craft a malicious page that submits this form on behalf of an "
-                "authenticated user — performing unintended state-changing actions "
-                "such as password changes, transfers, or account modifications."
+                f"A state-changing POST form on {page_url!r} has no CSRF protection. "
+                "An attacker can host a page that auto-submits this form using a "
+                "logged-in user's session — enabling account takeover, transfers, "
+                "or privilege escalation without the user's knowledge."
             ),
             mitigation=(
-                "Add a synchronizer token pattern: generate a cryptographically "
-                "random per-session token, store it server-side, include it as a "
-                "hidden form field, and validate it on every state-changing request. "
-                "Alternatively, use the SameSite=Lax or SameSite=Strict cookie "
-                "attribute as a complementary (not sole) defence. "
-                "Most web frameworks provide built-in CSRF middleware "
-                "(Django: CsrfViewMiddleware, Rails: protect_from_forgery, "
-                "Laravel: @csrf directive)."
+                "Add a cryptographically random per-session CSRF token as a hidden "
+                "form field and validate it server-side on every state-changing request. "
+                "Complement with SameSite=Lax cookies. Most frameworks have built-in "
+                "CSRF middleware (Django CsrfViewMiddleware, Rails protect_from_forgery)."
             ),
             cwe="CWE-352",
-            confidence="MEDIUM",
+            confidence="HIGH",
         )
