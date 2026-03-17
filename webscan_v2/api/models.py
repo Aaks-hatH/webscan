@@ -55,6 +55,12 @@ class ScanConfig(BaseModel):
     run_redirects: Optional[bool] = None
     run_exposure: Optional[bool] = None
     run_info_leak: Optional[bool] = None
+    # New in v3
+    run_path_bruteforce:  Optional[bool] = None
+    run_jwt_analysis:     Optional[bool] = None
+    run_tech_fingerprint: Optional[bool] = None
+    run_js_secrets:       Optional[bool] = None
+    run_admin_probe:      Optional[bool] = None
 
     @field_validator("target")
     @classmethod
