@@ -846,15 +846,19 @@ code { font-family: var(--fm); background: var(--s3); padding: 1px 5px; border-r
       <div class="auth-body">
         <div id="auth-err" class="err" style="display:none"></div>
         <div id="tab-login">
-          <div class="fg"><label>Username</label><input id="lu" type="text" placeholder="username" autocomplete="username"></div>
-          <div class="fg"><label>Password</label><input id="lp" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="current-password"></div>
-          <button class="btn btn-lime btn-full" id="login-btn" onclick="doLogin()">Sign in</button>
+          <form onsubmit="doLogin();return false;">
+            <div class="fg"><label>Username</label><input id="lu" type="text" placeholder="username" autocomplete="username"></div>
+            <div class="fg"><label>Password</label><input id="lp" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="current-password"></div>
+            <button type="submit" class="btn btn-lime btn-full" id="login-btn">Sign in</button>
+          </form>
         </div>
         <div id="tab-register" style="display:none">
-          <div class="fg"><label>Username</label><input id="ru" type="text" placeholder="username" autocomplete="username"></div>
-          <div class="fg"><label>Email</label><input id="re" type="email" placeholder="you@example.com" autocomplete="email"></div>
-          <div class="fg"><label>Password</label><input id="rp" type="password" placeholder="min 8 characters" autocomplete="new-password"></div>
-          <button class="btn btn-lime btn-full" onclick="doRegister()">Create account</button>
+          <form onsubmit="doRegister();return false;">
+            <div class="fg"><label>Username</label><input id="ru" type="text" placeholder="username" autocomplete="username"></div>
+            <div class="fg"><label>Email</label><input id="re" type="email" placeholder="you@example.com" autocomplete="email"></div>
+            <div class="fg"><label>Password</label><input id="rp" type="password" placeholder="min 8 characters" autocomplete="new-password"></div>
+            <button type="submit" class="btn btn-lime btn-full">Create account</button>
+          </form>
         </div>
       </div>
       <div class="auth-foot">authorized testing environments only</div>
@@ -1555,7 +1559,7 @@ async function aUsers(el) {
       return '<tr><td><div style="font-weight:600">' + esc(u.username) + '</div>' + (u.is_admin?'<span style="font-family:var(--fm);font-size:.6rem;color:#a78bfa">ADMIN</span>':'') + '</td><td class="muted" style="font-family:var(--fm);font-size:.76rem">' + esc(u.email) + '</td><td>' + (u.is_active?'<span class="spill sp-complete">ACTIVE</span>':'<span class="spill sp-error">SUSPENDED</span>') + '</td><td style="font-family:var(--fm)">' + u.scan_count + '</td><td class="muted xs" style="font-family:var(--fm)">' + (u.last_login?rel(u.last_login):'Never') + '</td><td>' + actions + '</td></tr>';
     }).join('');
     el.innerHTML =
-      '<div class="flex g2 ac" style="margin-bottom:14px"><input class="search" id="us-inp" placeholder="Search username or email" value="' + esc(uSrch) + '" oninput="uSrch=this.value" onkeydown="if(event.key==='Enter'){uSkip=0;aSwitch(\'users\')}'"><button class="btn btn-ghost btn-sm" onclick="uSkip=0;aSwitch(\'users\')">Search</button><span class="muted xs" style="font-family:var(--fm)">' + d.total + ' users</span></div>' +
+      '<div class="flex g2 ac" style="margin-bottom:14px"><input class="search" id="us-inp" placeholder="Search username or email" value="' + esc(uSrch) + '" oninput="uSrch=this.value" onkeydown="if(event.key===\'Enter\'){uSkip=0;aSwitch(\'users\')}"><button class="btn btn-ghost btn-sm" onclick="uSkip=0;aSwitch(\'users\')">Search</button><span class="muted xs" style="font-family:var(--fm)">' + d.total + ' users</span></div>' +
       '<table class="tbl"><thead><tr><th>User</th><th>Email</th><th>Status</th><th>Scans</th><th>Last Login</th><th>Actions</th></tr></thead><tbody>' + rows + '</tbody></table>' +
       '<div class="pag">' +
         (uSkip>0 ? '<button class="btn btn-ghost btn-sm" onclick="uSkip=Math.max(0,uSkip-50);aSwitch(\'users\')">&larr;</button>' : '') +
