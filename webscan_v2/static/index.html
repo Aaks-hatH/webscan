@@ -1253,7 +1253,7 @@ function pgScanLive(el, scan) {
   var logEl = document.getElementById('log');
   var lfEl  = document.getElementById('lf');
   var phEl  = document.getElementById('ph');
-  var PCTS  = {crawling:8,discovery:16,headers:22,csrf:28,info_leak:34,exposure:40,stored_xss:48,api_fuzz:56,fuzzing:64,tech_fingerprint:70,js_secrets:76,path_bruteforce:84,jwt_analysis:90,admin_probe:96};
+  var PCTS  = {warmup:3,crawling:8,discovery:16,headers:22,csrf:28,info_leak:34,exposure:40,stored_xss:48,api_fuzz:56,fuzzing:64,tech_fingerprint:70,js_secrets:76,path_bruteforce:84,jwt_analysis:90,admin_probe:96};
 
   function addLog(txt, cls) {
     var d = document.createElement('div');
