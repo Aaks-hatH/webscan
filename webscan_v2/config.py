@@ -3,7 +3,7 @@ webscan_v2/config.py — All probes, patterns, and scan profile definitions.
 """
 
 # ── Request settings ──────────────────────────────────────────────────────────
-DEFAULT_TIMEOUT   = 10
+DEFAULT_TIMEOUT   = 20   # raised from 10 — handles Render/cold-start free-tier targets
 DEFAULT_DELAY     = 0.3
 DEFAULT_MAX_DEPTH = 3
 DEFAULT_MAX_PAGES = 100
