@@ -7,7 +7,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -69,6 +69,12 @@ async def security_headers(request: Request, call_next):
 
 # ── Routes ────────────────────────────────────────────────────────────────────
 app.include_router(router, prefix="/api")
+
+# ── Health check (UptimeRobot / monitoring) ───────────────────────────────────
+@app.head("/", include_in_schema=False)
+@app.get("/health", include_in_schema=False)
+async def health_check():
+    return Response(status_code=200)
 
 # ── Static / SPA ─────────────────────────────────────────────────────────────
 _static = Path(__file__).parent / "static"
