@@ -87,6 +87,40 @@ class AsyncScannerEngine:
             errors:   list[str]     = []
             origin = _origin(self.config.target)
 
+            # ── Phase 0: Warmup ───────────────────────────────────────────────
+            # Free-tier hosts (Render, Railway, Fly) cold-start on first request,
+            # taking 10-30s before they respond.  Without this, the crawler fires
+            # immediately, every linked page times out, and we get 1 page crawled.
+            # We ping the root up to 4 times (30s timeout each) and wait for a
+            # sub-500 response before proceeding.  Adds at most ~5s on warm targets.
+            await progress.put({"type": "phase", "data": {
+                "phase": "warmup",
+                "message": "Checking target is awake…",
+            }})
+            _warmed = False
+            for _attempt in range(4):
+                try:
+                    _r = await client.get(
+                        self.config.target,
+                        timeout=30,
+                        follow_redirects=True,
+                    )
+                    if _r.status_code < 500:
+                        _warmed = True
+                        await progress.put({"type": "progress", "data": {
+                            "phase": "warmup",
+                            "message": f"Target responded (HTTP {_r.status_code}) — starting scan…",
+                        }})
+                        break
+                except Exception as _e:
+                    await progress.put({"type": "progress", "data": {
+                        "phase": "warmup",
+                        "message": f"Waiting for target… (attempt {_attempt + 1}/4)",
+                    }})
+                    await asyncio.sleep(6)
+            if not _warmed:
+                errors.append("Target did not respond after 4 warmup attempts — scan may be incomplete")
+
             # ── Phase 1: SPA Detection ────────────────────────────────────────
             await progress.put({"type": "phase", "data": {
                 "phase": "spa_detect",
